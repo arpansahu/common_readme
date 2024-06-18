@@ -205,3 +205,13 @@ and add your GitHub credentials from there
     Your workspace name may be different.
 
     Add all the env variables as required and mentioned in the Readme File.
+
+* Add Global Jenkins Variables from Dashboard --> Manage --> Jenkins
+  Configure System
+ 
+  * MAIL_JET_API_KEY
+  * MAIL_JET_API_SECRET
+  * MAIL_JET_EMAIL_ADDRESS
+  * MY_EMAIL_ADDRESS
+
+Now you are good to go.
