@@ -54,15 +54,14 @@ vi /root/pgadmin_venv/lib/python3.10/site-packages/pgadmin4/config.py
 ```
 
 
-## Nginx Server Configuration 
+## Configuring Nginx as Reverse proxy
 
-
-4. Edit Nginx Configuration
+1. Edit Nginx Configuration
 
     ```bash
     sudo vi /etc/nginx/sites-available/arpansahu
     ```
-5. Add this server configuration
+2. Add this server configuration
 
 ```bash
 server {
@@ -87,12 +86,12 @@ server {
 }
 ```
 
-6. Test the Nginx Configuration
+3. Test the Nginx Configuration
     ```bash
     sudo nginx -t
     ```
 
-7. Reload Nginx to apply the new configuration
+4. Reload Nginx to apply the new configuration
     ```bash
     sudo systemctl reload nginx
     ```
