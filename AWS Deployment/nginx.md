@@ -1,4 +1,4 @@
-#### Installing Nginx server
+#### Installing the Nginx server
 
 ```
 sudo apt-get install nginx
@@ -19,9 +19,9 @@ A Record	*	0.227.49.244 (public ip of ec2)	Automatic
 A Record	@	0.227.49.244 (public ip of ec2)	Automatic
 ```
 
-Note: now you will be able to see nginx running page if you open public ip of the machine
+Note: now you will be able to see nginx running page if you open the public ip of the machine
 
-Make Sure your EC2 security Group have this entry inbound rules 
+Make Sure your EC2 security Group have these entry inbound rules 
 
 ```
 random-hash-id	IPv4	HTTP	TCP	80	0.0.0.0/0	–
@@ -50,9 +50,9 @@ server {
 }
 ```
 
-Basically this single Nginx File will be hosting all the multiple projects which I have listed before also.
+This single Nginx File will be hosting all the multiple projects which I have listed before also.
 
-Checking if configurations fie is correct
+Checking if the configurations file is correct
 
 ```
 sudo service nginx configtest /etc/nginx/sites-available/arpansahu
@@ -70,15 +70,15 @@ Restarting Nginx Server
 sudo systemctl restart nginx
 ```
 
-Now It's time to enable HTTPS for this server
+Now it's time to enable HTTPS for this server
 
 ### Step 3: Enabling HTTPS 
 
-1. Base Domain:  Enabling https for base domain only or a single sub domain
+1. Base Domain:  Enabling HTTPS for base domain only or a single subdomain
 
-    To allow visitors to access your site over HTTPS, you’ll need an SSL/TLS certificate that sits on your web server. Certificates are issued by a Certificate Authority (CA).We’ll use a free CA called Let’s Encrypt. To actually install the certificate, you can use the Certbot client, which gives you an utterly painless step-by-step series of prompts.
-    Before starting with Certbot, you can tell Nginx up front to disable TLS version 1.0 and 1.1 in favor of versions 1.2 and 1.3. TLS 1.0 is end-of-life (EOL), while TLS 1.1 contained several vulnerabilities that were fixed by TLS 1.2. To do this, open the file /etc/nginx/nginx.conf. Find the following line:
-    
+    To allow visitors to access your site over HTTPS, you’ll need an SSL/TLS certificate that sits on your web server. Certificates are issued by a Certificate Authority (CA). We’ll use a free CA called Let’s Encrypt. To install the certificate, you can use the Certbot client, which gives you an utterly painless step-by-step series of prompts.
+    Before starting with Certbot, you can tell Nginx up front to disable TLS version 1.0 and 1.1 in favour of versions 1.2 and 1.3. TLS 1.0 is end-of-life (EOL), while TLS 1.1 contained several vulnerabilities that were fixed by TLS 1.2. To do this, open the file /etc/nginx/nginx.conf. Find the following line:
+
     Open nginx.conf file end change ssl_protocols 
     
     ```
@@ -93,7 +93,7 @@ Now It's time to enable HTTPS for this server
     sudo nginx -t
     ```
     
-    Now you’re ready to install and use Certbot, you can use snap to install Certbot:
+    Now you’re ready to install and use Certbot, you can use Snap to install Certbot:
     
     ```
     sudo snap install --classic certbot
@@ -106,10 +106,10 @@ Now It's time to enable HTTPS for this server
     sudo certbot --nginx --rsa-key-size 4096 --no-redirect
     ```
     
-    It will be asking for domain name then you can enter your base domain 
-    I have generated ssl for arpansahu.me
+    It will ask for domain name then you can enter your base domain 
+    I have generated SSL for arpansahu.me
     
-    Then a few questions will be asked by them answer them all and done your ssl certificate will be geerated
+    Then a few questions will be asked by them answer them all and do your SSL certificate will be generated
     
     Now These lines will be added to your # Nginx configuration: /etc/nginx/sites-available/arpansahu
     
@@ -122,7 +122,7 @@ Now It's time to enable HTTPS for this server
     ```
     
     Redirecting HTTP to HTTPS
-    Open nginx configuration file  and make it like this
+    Open the nginx configuration file  and make it like this
 
     ```
     sudo vi /etc/nginx/sites-available/arpansahu
@@ -152,20 +152,20 @@ Now It's time to enable HTTPS for this server
     }                          
     ``` 
     
-    You can dry run and check weather it's renewal is working or not
+    You can dry run and check whether it's renewal is working or not
     ```
     sudo certbot renew --dry-run
     ```
     
     Note: this process was for arpansahu.me and not for all subdomains.
-        For all subdomains we will have to setup a wildcard ssl certificate
+    For all subdomains, we will have to set a wildcard SSL certificate
 
 
 2. Enabling a Wildcard certificate
 
-    Here we will enable ssl certificate for all subdomains at once
-    
-    Run following Command
+    Here we will enable SSL certificate for all subdomains at once
+        
+    Run the following Command
     ```
     sudo certbot certonly --manual --preferred-challenges dns
     ```
@@ -173,11 +173,11 @@ Now It's time to enable HTTPS for this server
     Again you will be asked domain name and here you will use *.arpansahu.me. and second domain you will use is
     arpansahu.me.
     
-    Now, you should be having a question in your mind that why we are generating ssl for arpansahu.me separately.
-    It's because Let's Encrupt does not include base doamin with wildcard certificates for subdomains.
+    Now, you should have a question in your mind about why we are generating SSL for arpansahu.me separately.
+    It's because Let's Encrypt does not include base domain with wildcard certificates for subdomains.
 
-    After running above command you will see a message similar to this
-    
+    After running the above command you will see a message similar to this
+      
     ```
     Saving debug log to /var/log/letsencrypt/letsencrypt.log
     Please enter the domain name(s) you would like on your certificate (comma and/or
@@ -195,48 +195,48 @@ Now It's time to enable HTTPS for this server
     
     Before continuing, verify the TXT record has been deployed. Depending on the DNS
     provider, this may take some time, from a few seconds to multiple minutes. You can
-    check if it has finished deploying with aid of online tools, such as the Google
+    check if it has finished deploying with the aid of online tools, such as Google
     Admin Toolbox: https://toolbox.googleapps.com/apps/dig/#TXT/_acme-challenge.arpansahu.me.
-    Look for one or more bolded line(s) below the line ';ANSWER'. It should show the
+    Look for one or more bolded line(s) below the line '; ANSWER'. It should show the
     value(s) you've just added.
    
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Press Enter to Continue
     ```
    
-    You will be given a dns challenge called ACME challenger you have to create a dns TXT record in DNS.
-    Similar to below record.
-    
+    You will be given a DNS challenge called ACME challenger you have to create a DNS TXT record in DNS.
+    Similar to the below record.
+        
     ```
-    TXT Record	_acme-challenge	dpWCxvq3mARF5iGzSfaRNXwmdkUSs0wgsTPhSaX1gK4	5 Automatic
+    TXT Record  _acme-challenge dpWCxvq3mARF5iGzSfaRNXwmdkUSs0wgsTPhSaX1gK4 5 Automatic
     ```
     
-    Now, use this url to verify records are updated or not
+    Now, use this URL to verify whether records are updated or not
 
     https://toolbox.googleapps.com/apps/dig/#TXT/_acme-challenge.arpansahu.me (arpansahu.me is domain)
 
-    If its verified then press enter the terminal as mentioned above
-    
+    If it's verified then press enter the terminal as mentioned above
+        
     Then your certificate will be generated
     ```
-    Successfully received certificate.
-    Certificate is saved at: /etc/letsencrypt/live/arpansahu.me-0001/fullchain.pem            (use this in your nginx configuration file)
+    Successfully received a certificate.
+    The certificate is saved at: /etc/letsencrypt/live/arpansahu.me-0001/fullchain.pem            (use this in your nginx configuration file)
     Key is saved at:         /etc/letsencrypt/live/arpansahu.me-0001/privkey.pem
     This certificate expires on 2023-01-20.
-    These files will be updated when the certificate renews.
+    These files will be updated when the certificate is renewed.
     ```
-    
-    You can notice here, certificate generated is arpansahu.me-0001 and not arpansahu.me
+        
+    You can notice here, the certificate generated is arpansahu.me-0001 and not arpansahu.me
     because we already generated a certificate named arpansahu.me
-    
+        
     So remember to delete it before generating this wildcard certificate
     using command
 
     ```
     sudo certbot delete
     ```
-    
-    Note: This certificate will not be renewed automatically. Auto-renewal of --manual certificates requires the use of an authentication hook script (--manual-auth-hook) but one was not provided. To renew this certificate, repeat this same certbot command before the certificate's expiry date.
+        
+    Note: This certificate will not be renewed automatically. Auto-renewal of --manual certificates requires the use of an authentication hook script (--manual-auth-hook) but one was not provided. To renew this certificate, repeat this same Certbot command before the certificate's expiry date.
 
 3. Generating Wildcard SSL certificate and Automating its renewal
 
@@ -252,7 +252,7 @@ Now It's time to enable HTTPS for this server
     
    2. Install acme-dns Server
 
-      * Create folder for acme-dns and change directory
+      * Create a folder for acme-dns and change the directory
 
         ```
          sudo mkdir /opt/acme-dns
@@ -273,7 +273,7 @@ Now It's time to enable HTTPS for this server
         ```
         sudo rm acme-dns.tar.gz
         ```
-      * Create soft link
+      * Create a soft link
         ```
         sudo ln -s \
         /opt/acme-dns/acme-dns /usr/local/bin/acme-dns
@@ -288,7 +288,7 @@ Now It's time to enable HTTPS for this server
          --home /var/lib/acme-dns \
          acme-dns
         ```
-      * Update default acme-dns config compare with IP from the AWS console. CAn't bind to the public address need to use private one.
+      * Update default acme-dns config compared with IP from the AWS console. Can't bind to the public address need to use private one.
         ```
         ip addr
 	  
@@ -303,7 +303,7 @@ Now It's time to enable HTTPS for this server
         ```
         listen = "127.0.0.1:53” to listen = “private ip of the ec2 instance” 172.31.93.180:53(port will be 53)
  
-        Similarly Edit other details mentioned below  
+        Similarly, Edit other details mentioned below  
 
         # domain name to serve the requests off of
         domain = "auth.arpansahu.me"
@@ -325,7 +325,7 @@ Now It's time to enable HTTPS for this server
         ip = "127.0.0.1”. (Changed)
 
         # listen port, eg. 443 for default HTTPS
-        port = "8080" (Changed).         ——— we will use port 8090 because we will also use Jenkins which will be running on 8080 port
+        port = "8080" (Changed).         ——— We will use port 8090 because we will also use Jenkins which will be running on 8080 port
         # possible values: "letsencrypt", "letsencryptstaging", "cert", "none"
         tls = "none"   (Changed)
 
@@ -370,7 +370,7 @@ Now It's time to enable HTTPS for this server
         ```
         journalctl -u acme-dns --no-pager --follow
         ```
-      * From local host try to resolve random DNS record
+      * From the local host try to resolve the random DNS record
         ```
         dig api.arpansahu.me
         dig api.auth.arpansahu.me
@@ -407,7 +407,7 @@ Now It's time to enable HTTPS for this server
          sudo acme-dns-client register \
          -d arpansahu.me -s http://localhost:8090
 
-         Above command is old now we will use the new command 
+        The above command is old now we will use the new command 
          sudo acme-dns-client register \
           -d arpansahu.me \
           -allow 0.0.0.0/0 \
@@ -428,12 +428,12 @@ Now It's time to enable HTTPS for this server
          Automatic
          ```
 
-         Same as an entry is needed to be added to complete one time challenge as in previously we did.
-       * Check the entry is added successfully or not
+        Same as an entry that needs to be added to complete a time challenge as previously we did.
+       * Check whether the entry is added successfully or not
          ```
          dig _acme-challenge.arpansahu.me
          ```
-       * Get wildcard certificate
+       * Get a wildcard certificate
          ```
          sudo certbot certonly \
          --manual \
@@ -442,8 +442,8 @@ Now It's time to enable HTTPS for this server
          --manual-auth-hook 'acme-dns-client' \ 
          -d ‘*.arpansahu.me’ -d arpansahu.me
          ```
-         Note: Here we have to mention both the base and wildcard domain names with -d since let's encrypt don't provide base domain ssl by default in wildcard domain ssl
-       *Verifying the certificate
+        Note: Here we have to mention both the base and wildcard domain names with -d since let's encrypt don't provide base domain ssl by default in wildcard domain ssl
+       * Verifying the certificate
          ```
          sudo openssl x509 -text -noout \
          -in /etc/letsencrypt/live/arpansahu.me/fullchain.pem
@@ -473,7 +473,7 @@ Now It's time to enable HTTPS for this server
          ```
          sudo crontab -e
          ```
-       * Add following lines to the file
+       * Add the following lines to the file
          ```
          0 */12 * * * certbot renew --manual --test-cert --preferred-challenges dns --manual-auth-hook 'acme-dns-client'
          ```
