@@ -44,7 +44,7 @@ server {
   server_name               arpansahu.me;        
   listen                    80;
   location / {
-    proxy_pass              http://{ip_of_home_server}:8014;
+    proxy_pass              http://{ip_of_home_server/localhost}:8000;
     proxy_set_header        Host $host;
   }
 }
@@ -109,7 +109,7 @@ Now It's time to enable HTTPS for this server
     It will be asking for domain name then you can enter your base domain 
     I have generated ssl for arpansahu.me
     
-    Then a few questions will be asked by them answer them all and done your ssl certificate will be generated
+    Then a few questions will be asked by them answer them all and done your ssl certificate will be geerated
     
     Now These lines will be added to your # Nginx configuration: /etc/nginx/sites-available/arpansahu
     
@@ -141,7 +141,7 @@ Now It's time to enable HTTPS for this server
     server {
     
       location / {
-        proxy_pass              http://{ip_of_home_server}:8014;
+        proxy_pass              http://{ip_of_home_server/ localhost}:8000;
         proxy_set_header        Host $host;
         
         listen 443 ssl; # managed by Certbot
@@ -344,7 +344,7 @@ Now It's time to enable HTTPS for this server
         sudo systemctl enable acme-dns.service
         sudo systemctl start acme-dns.service
         ```
-      * Check acme-dns for posible errors
+      * Check acme-dns for possible errors
         ```
         sudo systemctl status acme-dns.service
         ```
@@ -406,12 +406,28 @@ Now It's time to enable HTTPS for this server
          ```
          sudo acme-dns-client register \
          -d arpansahu.me -s http://localhost:8090
+
+         Above command is old now we will use the new command 
+         sudo acme-dns-client register \
+          -d arpansahu.me \
+          -allow 0.0.0.0/0 \
+          -s http://localhost:8080
          ```
          Note: When we edited acme-dns config file there we mentioned the port 8090 and thats why we are using this port here also
        * Creating Another DNS Entry 
          ```
          CNAME Record	_acme-challenge	e6ac0f0a-0358-46d6-a9d3-8dd41f44c7ec.auth.arpansahu.me.	Automatic
          ```
+
+        Since the last update in  the last step now two more entries should be added 
+
+         ```
+         CAA Record @	0 issuewild "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1424899626"  Automatic
+
+         CAA Record @	0 issue "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1424899626"
+         Automatic
+         ```
+
          Same as an entry is needed to be added to complete one time challenge as in previously we did.
        * Check the entry is added successfully or not
          ```
