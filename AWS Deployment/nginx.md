@@ -1,4 +1,4 @@
-Installing Nginx server
+#### Installing Nginx server
 
 ```
 sudo apt-get install nginx
@@ -157,7 +157,7 @@ Now It's time to enable HTTPS for this server
     sudo certbot renew --dry-run
     ```
     
-    Note: this process was for borcelle-crm.arpansahu.me and not for all subdomains.
+    Note: this process was for arpansahu.me and not for all subdomains.
         For all subdomains we will have to setup a wildcard ssl certificate
 
 
