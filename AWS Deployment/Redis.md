@@ -1,6 +1,4 @@
-# Redis 
-
-## Installation
+### Installation
 
 1. **Create a Docker Volume for Portainer Data (optional but recommended):**
    This step is optional but recommended as it allows you to persist Portainer's data across container restarts.

@@ -1,4 +1,4 @@
-## Install MinIO
+### Install MinIO
 
 1. Install MinIO on your server. You can download it from the official website or use a package manager if available.
     ```bash
@@ -58,7 +58,7 @@
 Note: minio api and ui server both run at 0.0.0.0 host by default
 
 
-## Nginx Setup as Reverse Proxy
+### Nginx Setup as Reverse Proxy
 
 Note: Nginx is already setup in the other steps as seen before right now i will discuss about server configuration for minio and minioui
 
@@ -140,7 +140,7 @@ Note: Nginx is already setup in the other steps as seen before right now i will 
         ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
     }
     ```
-### Setup Copy Cron to copy whenever cerbot updates the certificate to /etc/minio/certs
+#### Setup Copy Cron to copy whenever cerbot updates the certificate to /etc/minio/certs
 
 1. Create a Cron Shell file 
     ```bash

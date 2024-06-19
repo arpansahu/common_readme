@@ -1,4 +1,3 @@
-## Deployment on AWS EC2/ Home Server Ubuntu 22.0 LTS/ Hostinger VPS Server
 Previously This project was hosted on Heroku, but so I started hosting this and all other projects in a 
 Single EC2 Machine, which costed me a lot, so now I have shifted all the projects into my own Home Server with 
 Ubuntu 22.0 LTS Server, except for portfolio project at https://www.arpansahu.me along with Nginx 

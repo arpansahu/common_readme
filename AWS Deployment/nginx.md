@@ -1,5 +1,3 @@
-# Serving the requests from Nginx
-
 Installing Nginx server
 
 ```

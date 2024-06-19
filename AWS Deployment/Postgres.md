@@ -1,6 +1,4 @@
-# PostgreSql
-
-## Installing PostgreSql
+### Installing PostgreSql
 
 1. Update the package list to make sure you have the latest information
 

@@ -1,6 +1,4 @@
-# PGAdmin (PostgreSQl UI)
-
-## Installing PgAdmin
+### Installing PgAdmin
 
 1. **Create a Virtual Environment:**
 
@@ -54,7 +52,7 @@ vi /root/pgadmin_venv/lib/python3.10/site-packages/pgadmin4/config.py
 ```
 
 
-## Configuring Nginx as Reverse proxy
+### Configuring Nginx as Reverse proxy
 
 1. Edit Nginx Configuration
 

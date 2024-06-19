@@ -1,5 +1,3 @@
-# CI/CD with Jenkins
-
 Installing Jenkins
 
 Reference: https://www.jenkins.io/doc/book/installing/linux/

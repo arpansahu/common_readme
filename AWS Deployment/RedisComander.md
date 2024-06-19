@@ -1,6 +1,4 @@
-# Redis Commander
-
-## Installing Redis Commander
+### Installing Redis Commander
 
 1. Installation:
     You can install redis-commander globally using npm (Node Package Manager) with the following command:
@@ -13,7 +11,7 @@
     redis-commander --redis-host your-redis-server-ip --redis-port your-redis-port --redis-password your-redis-password --port 9996
     ```
 
-## Serving with Nginx, as well password protecting Redis Commander
+### Serving with Nginx, as well password protecting Redis Commander
 
 Redis Commander d'ont have native password protection enabled
 
@@ -67,7 +65,7 @@ Redis Commander d'ont have native password protection enabled
     sudo systemctl reload nginx
     ```
 
-## Running Redis Commander in background Using pm2
+### Running Redis Commander in background Using pm2
 
 1.	Install pm2 globally (if not already installed):
     ```bash

@@ -1,6 +1,4 @@
-# Portainer
-
-## Installation
+### Installation
 
 1. **Create a Docker Volume for Portainer Data (optional but recommended):**
    This step is optional but recommended as it allows you to persist Portainer's data across container restarts.
@@ -33,7 +31,7 @@ Once the setup is complete, you should have access to the Portainer dashboard, w
 Keep in mind that the instructions provided here assume a basic setup. For production environments, it's recommended to secure the Portainer instance, such as by using HTTPS and setting up authentication. Refer to the [Portainer documentation](https://documentation.portainer.io/) for more advanced configurations and security considerations.
 
 
-## Configuring Nginx as Reverse proxy
+### Configuring Nginx as Reverse proxy
 
 1. Edit Nginx Configuration
 
