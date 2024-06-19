@@ -1,6 +1,4 @@
-# Dockerizing
-
-Installing Docker on Home Server
+#### Installing Redis Commander
 
 Reference: https://docs.docker.com/engine/install/ubuntu/
 
