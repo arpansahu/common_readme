@@ -1,4 +1,4 @@
-### Install MinIO
+### Installing Minio
 
 1. Install MinIO on your server. You can download it from the official website or use a package manager if available.
     ```bash
