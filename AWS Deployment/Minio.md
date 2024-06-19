@@ -1,5 +1,3 @@
-# Minio
-
 ## Install MinIO
 
 1. Install MinIO on your server. You can download it from the official website or use a package manager if available.
@@ -236,3 +234,13 @@ Note: Nginx is already setup in the other steps as seen before right now i will 
     0 0 * * * /usr/local/bin/update_minio_certs.sh
     ```
 
+5. Install mailjet-rest python module
+    ```bash
+    pip install mailjet-rest
+    ```
+
+6. Test the script 
+    ```bash
+        cd /usr/local/bin
+        ./update_minio_certs.sh
+    ```
