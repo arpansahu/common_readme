@@ -117,7 +117,7 @@ Note: In previous steps we have already seen how to setup the reverse proxy with
         }
 
         server {
-            listen 443 ssl;  # Use SSL on port 443
+            listen 9550 ssl;  # Use SSL on port 443
             proxy_pass postgresql_upstream;
 
             ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem;  # SSL certificate
@@ -193,7 +193,7 @@ Note: In previous steps we have already seen how to setup the reverse proxy with
                 }
 
                 server {
-                    listen 443 ssl;  # Use SSL on port 443
+                    listen 9550 ssl;  # Use SSL on port different 443
                     proxy_pass postgresql_upstream;
 
                     ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem;  # SSL certificate
