@@ -1,5 +1,4 @@
 import requests
-import os
 
 # Define the main base README file and the new README file
 base_readme_file = "baseREADME.md"
@@ -22,8 +21,8 @@ include_files = {
     "docker-compose.yml": "https://raw.githubusercontent.com/arpansahu/great_chat/main/docker-compose.yml",
     "Dockerfile": "https://raw.githubusercontent.com/arpansahu/great_chat/main/Dockerfile",
     "Jenkinsfile": "https://raw.githubusercontent.com/arpansahu/great_chat/main/Jenkinsfile",
-    "AWS DEPLOYMENT INTRODUCTION": "https://raw.githubusercontent.com/arpansahu/common_readme/blob/main/Introduction/aws_desployment_introduction.md",
-    "STATIC_FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/blob/main/Introduction/static_files_settings.md",
+    "AWS DEPLOYMENT INTRODUCTION": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Introduction/aws_desployment_introduction.md",
+    "STATIC_FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Introduction/static_files_settings.md",
     "INTRODUCTION": "readme_manager/partials/introduction.md",
     "DOC_AND_STACK": "readme_manager/partials/documentation_and_stack.md",
     "TECHNOLOGY QNA": "readme_manager/partials/technology_qna.md",
