@@ -3,7 +3,7 @@ import os
 
 # Define the main base README file and the new README file
 base_readme_file = "baseREADME.md"
-new_readme_file = "README.md"
+new_readme_file = "../Readme.md"
 
 # Define a dictionary with the placeholders and their corresponding GitHub raw URLs or local paths
 include_files = {
