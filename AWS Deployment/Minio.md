@@ -8,7 +8,7 @@
     ```
 
 2. Generate SSL Certificates using Certbot
-    While setting up nginx we already automated this autoregeneration of certificates in every3 months 
+    While setting up nginx we already automated this auto regeneration of certificates every3 months 
     The certificates will be stored in /etc/letsencrypt/live/arpansahu.me/.
     
 3. Configure MinIO with SSL Certificates:
@@ -21,7 +21,7 @@
     ```
 
 4. Environment File Configuration
-    Ensure your environment file, usually located at /etc/default/minio, has the following content: if file is not present create it
+    Ensure your environment file, usually located at /etc/default/minio, has the following content: if the file is not present create it
     ```bash
     MINIO_VOLUMES="/mnt/minio"
 
@@ -49,7 +49,7 @@
     ```
 
 6. Reload Systemd and Start MinIO
-    Reload the systemd daemon and start the MinIO service
+ Reload the system daemon and start the MinIO service
     
     ```echo
     sudo systemctl daemon-reload
@@ -60,10 +60,10 @@ Note: minio api and ui server both run at 0.0.0.0 host by default
 
 ### Nginx Setup as Reverse Proxy
 
-Note: Nginx is already setup in the other steps as seen before right now i will discuss about server configuration for minio and minioui
+Note: Nginx is already set in the other steps as seen before right now I will discuss server configuration for minio and minioui
 
-1. Nginx Server configuration for minio api server 
-    ```bash
+1. Nginx Server configuration for minio API server 
+     ```bash
     server {
         listen         80;
         server_name    minio.arpansahu.me;
