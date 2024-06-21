@@ -15,12 +15,12 @@ sudo systemctl status nginx
 
 Add these two records to your DNS Configurations
 ```
-A Record	*	0.227.49.244 (public ip of ec2)	Automatic
-A Record	@	0.227.49.244 (public ip of ec2)	Automatic
+A Record	*	0.227.49.244 (public IP of ec2)	Automatic
+A Record	@	0.227.49.244 (public IP of ec2)	Automatic
 ```
 
-Note: now you will be able to see nginx running page if you open the public ip of the machine
-
+Note: now you will be able to see nginx running page if you open the public IP of the machine
+IP
 Make Sure your EC2 security Group have these entry inbound rules 
 
 ```
@@ -77,7 +77,7 @@ Now it's time to enable HTTPS for this server
 1. Base Domain:  Enabling HTTPS for base domain only or a single subdomain
 
     To allow visitors to access your site over HTTPS, you’ll need an SSL/TLS certificate that sits on your web server. Certificates are issued by a Certificate Authority (CA). We’ll use a free CA called Let’s Encrypt. To install the certificate, you can use the Certbot client, which gives you an utterly painless step-by-step series of prompts.
-    Before starting with Certbot, you can tell Nginx up front to disable TLS version 1.0 and 1.1 in favour of versions 1.2 and 1.3. TLS 1.0 is end-of-life (EOL), while TLS 1.1 contained several vulnerabilities that were fixed by TLS 1.2. To do this, open the file /etc/nginx/nginx.conf. Find the following line:
+    Before starting with Certbot, you can tell Nginx up front to disable TLS versions 1.0 and 1.1 in favour of versions 1.2 and 1.3. TLS 1.0 is end-of-life (EOL), while TLS 1.1 contained several vulnerabilities that were fixed by TLS 1.2. To do this, open the file /etc/nginx/nginx.conf. Find the following line:
 
     Open nginx.conf file end change ssl_protocols 
     
@@ -106,11 +106,11 @@ Now it's time to enable HTTPS for this server
     sudo certbot --nginx --rsa-key-size 4096 --no-redirect
     ```
     
-    It will ask for domain name then you can enter your base domain 
+    It will ask for the domain name then you can enter your base domain 
     I have generated SSL for arpansahu.me
     
-    Then a few questions will be asked by them answer them all and do your SSL certificate will be generated
-    
+    Then a few questions will be asked answer them all and your SSL certificate will be generated
+
     Now These lines will be added to your # Nginx configuration: /etc/nginx/sites-available/arpansahu
     
     ```
@@ -163,7 +163,7 @@ Now it's time to enable HTTPS for this server
 
 2. Enabling a Wildcard certificate
 
-    Here we will enable SSL certificate for all subdomains at once
+    Here we will enable an SSL certificate for all subdomains at once
         
     Run the following Command
     ```
@@ -174,7 +174,7 @@ Now it's time to enable HTTPS for this server
     arpansahu.me.
     
     Now, you should have a question in your mind about why we are generating SSL for arpansahu.me separately.
-    It's because Let's Encrypt does not include base domain with wildcard certificates for subdomains.
+    It's because Let's Encrypt does not include a base domain with wildcard certificates for subdomains.
 
     After running the above command you will see a message similar to this
       
@@ -290,7 +290,7 @@ Now it's time to enable HTTPS for this server
         ```
       * Update default acme-dns config compared with IP from the AWS console. Can't bind to the public address need to use private one.
         ```
-        ip addr
+        IP addr
 	  
         sudo mkdir -p /etc/acme-dns
 	  
@@ -301,7 +301,7 @@ Now it's time to enable HTTPS for this server
       
       * Replace
         ```
-        listen = "127.0.0.1:53” to listen = “private ip of the ec2 instance” 172.31.93.180:53(port will be 53)
+        listen = "127.0.0.1:53” to listen = “private IP of the ec2 instance” 172.31.93.180:53(port will be 53)
  
         Similarly, Edit other details mentioned below  
 
@@ -315,14 +315,14 @@ Now it's time to enable HTTPS for this server
 
         records = [
           # domain pointing to the public IP of your acme-dns server
-           "auth.arpansahu.me. A 44.199.177.138. (public elastic ip)”,
+           "auth.arpansahu.me. A 44.199.177.138. (public elastic IP)”,
           # specify that auth.example.org will resolve any *.auth.example.org records
            "auth.arpansahu.me. NS auth.arpansahu.me.”,
         ]
 	
         [api]
-        # listen ip eg. 127.0.0.1
-        ip = "127.0.0.1”. (Changed)
+        # listen IP eg. 127.0.0.1
+        IP = "127.0.0.1”. (Changed)
 
         # listen port, eg. 443 for default HTTPS
         port = "8080" (Changed).         ——— We will use port 8090 because we will also use Jenkins which will be running on 8080 port
@@ -354,7 +354,7 @@ Now it's time to enable HTTPS for this server
          ```
       * Create A record for your domain
          ```
-         auth.arpansahu.me IN A <public-ip>
+         auth.arpansahu.me IN A <public-IP>
          ```
       * Create NS record for auth.arpansahu.me pointing to auth.arpansahu.me. This means, that auth.arpansahu.me is
         responsible for any *.auth.arpansahu.me records
@@ -399,7 +399,7 @@ Now it's time to enable HTTPS for this server
      sudo snap install --classic certbot
      sudo ln -s /snap/bin/certbot /usr/bin/certbot
      ```
-    Note: you can skip step4 if Certbot is already installed
+    Note: you can skip this step if Certbot is already installed
 
     5. Get Letsencrypt Wildcard Certificate
        * Create a new acme-dns account for your domain and set it up
