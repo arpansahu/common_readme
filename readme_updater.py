@@ -1,4 +1,5 @@
 import requests
+import os
 
 # Define the main base README file and the new README file
 base_readme_file = "baseREADME.md"
@@ -23,13 +24,13 @@ include_files = {
     "Jenkinsfile": "https://raw.githubusercontent.com/arpansahu/great_chat/main/Jenkinsfile",
     "AWS DEPLOYMENT INTRODUCTION": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Introduction/aws_desployment_introduction.md",
     "STATIC_FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Introduction/static_files_settings.md",
-    "INTRODUCTION": "readme_manager/partials/introduction.md",
-    "DOC_AND_STACK": "readme_manager/partials/documentation_and_stack.md",
-    "TECHNOLOGY QNA": "readme_manager/partials/technology_qna.md",
-    "DEMO": "readme_manager/partials/demo.md",
-    "INSTALLATION": "readme_manager/partials/installation.md",
-    "DJANGO_COMMANDS": "readme_manager/partials/django_commands.md",
-    "NGINX_SERVER": "readme_manager/partials/nginx_server.md",
+    "INTRODUCTION": "partials/introduction.md",
+    "DOC_AND_STACK": "partials/documentation_and_stack.md",
+    "TECHNOLOGY QNA": "partials/technology_qna.md",
+    "DEMO": "partials/demo.md",
+    "INSTALLATION": "partials/installation.md",
+    "DJANGO_COMMANDS": "partials/django_commands.md",
+    "NGINX_SERVER": "partials/nginx_server.md",
 }
 
 # Read the base README file content
