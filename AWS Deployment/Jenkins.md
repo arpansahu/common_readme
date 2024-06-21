@@ -2,7 +2,7 @@
 
 Reference: https://www.jenkins.io/doc/book/installing/linux/
 
-Jenkins requires Java in order to run, yet certain distributions don’t include this by default and some Java versions are incompatible with Jenkins.
+Jenkins requires Java to run, yet certain distributions don’t include this by default and some Java versions are incompatible with Jenkins.
 
 There are multiple Java implementations which you can use. OpenJDK is the most popular one at the moment, we will use it in this guide.
 
@@ -48,7 +48,7 @@ You can check the status of the Jenkins service using the command:
 sudo systemctl status jenkins
 ```
 
-Now for serving the Jenkins UI from Nginx add these following lines to the Nginx file located at 
+Now for serving the Jenkins UI from Nginx add the following lines to the Nginx file located at 
 /etc/nginx/sites-available/arpansahu by running the following command
 
 ```
@@ -81,9 +81,9 @@ sudo vi /etc/nginx/sites-available/arpansahu
     ```
 
 You can add all the server blocks to the same nginx configuration file
-just make sure you place the server block for base domain at the last
+just make sure you place the server block for the base domain at the last
 
-* To copy .env from local server directory while buidling image
+* To copy .env from the local server directory while building image
 
 add Jenkins ALL=(ALL) NOPASSWD: ALL
 inside /etc/sudoers file
@@ -98,5 +98,5 @@ stage('Dependencies') {
             }
         }
 
-in jenkinsfile
+in Jenkinsfile
 
