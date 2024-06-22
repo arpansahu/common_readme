@@ -1,6 +1,3 @@
-
-## Update README Script
-
 Each repository contains an `update_readme.sh` script located in the `readme_manager` directory. This script is responsible for updating the README file in the repository by pulling in content from various sources.
 
 ### What it Does
@@ -67,7 +64,7 @@ include_files = {
     "AWS DEPLOYMENT INTRODUCTION": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Introduction/aws_desployment_introduction.md",
     "STATIC_FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Introduction/static_files_settings.md",
     "README of Readme Manager": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Readme%20manager/readme_manager.md",
-    
+
     # Project-Specific Partial Files
     "INTRODUCTION": "../readme_manager/partials/introduction.md",
     "DOC_AND_STACK": "../readme_manager/partials/documentation_and_stack.md",
