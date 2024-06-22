@@ -15,8 +15,7 @@ The `update_readme.sh` script performs the following actions:
 To run the `update_readme.sh` script, navigate to the `readme_manager` directory and execute the script:
 
 ```bash
-cd readme_manager
-./update_readme.sh
+cd readme_manager && ./update_readme.sh
 ```
 
 This will update the `README.md` file in the root of the repository with the latest content from the specified sources.
