@@ -20,8 +20,12 @@ update_readme() {
     # Construct the authenticated URL
     AUTHENTICATED_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${REPO_PATH}"
 
-    # Log the URL being used
+    # Log the URL being used (without exposing the password)
     echo "Using URL: $AUTHENTICATED_URL"
+
+    # Log the credentials (for debugging purposes, ensure to remove this after debugging)
+    echo "GIT_USERNAME: ${GIT_USERNAME}"
+    echo "GIT_PASSWORD: ${GIT_PASSWORD}"
 
     # Check if we can access the repository
     echo "Checking access to repository: $repo_url"
