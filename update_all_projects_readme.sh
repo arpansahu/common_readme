@@ -23,6 +23,15 @@ update_readme() {
     # Log the URL being used
     echo "Using URL: $AUTHENTICATED_URL"
 
+    # Check if we can access the repository
+    echo "Checking access to repository: $repo_url"
+    if curl -u "${GIT_USERNAME}:${GIT_PASSWORD}" -o /dev/null -sIf "https://github.com/${REPO_PATH}"; then
+        echo "Successfully authenticated to repository: $repo_url"
+    else
+        echo "Failed to authenticate to repository: $repo_url"
+        return
+    fi
+
     # Clone the repository using Jenkins credentials
     echo "Cloning repository: $repo_url"
     if git clone "$AUTHENTICATED_URL"; then
