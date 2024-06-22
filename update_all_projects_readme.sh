@@ -14,9 +14,9 @@ update_readme() {
     local repo_url=$1
     local repo_name=$(basename -s .git "$repo_url")
     
-    # Clone the repository
+    # Clone the repository using Jenkins credentials
     echo "Cloning repository: $repo_url"
-    git clone "$repo_url"
+    git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://}
     
     # Navigate to the repository directory
     cd "$repo_name"
@@ -38,9 +38,7 @@ update_readme() {
             if git diff --cached --exit-code Readme.md; then
                 echo "Readme.md not changed for $repo_name"
             else
-                # Commit and push the changes
-                git config user.name "$GIT_USER_NAME"
-                git config user.email "$GIT_USER_EMAIL"
+                # Commit and push the changes using Jenkins credentials
                 git commit -m "Update Readme.md"
                 git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://}
             fi

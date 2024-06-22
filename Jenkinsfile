@@ -5,8 +5,6 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        sh 'git config --global user.name "arpansahu"'
-                        sh 'git config --global user.email "arpanrocks95@gmail.com"'
                         sh 'chmod +x update_all_projects_readme.sh'
                         sh './update_all_projects_readme.sh'
                     }
