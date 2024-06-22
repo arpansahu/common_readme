@@ -4,7 +4,7 @@ pipeline {
         CREDS = credentials('a8543f6d-1f32-4a4c-bb31-d7fffe78828e')
     }
     stages {
-        stage('Verify Credentials and Authenticate Repository') {
+        stage('Update READMEs') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
@@ -12,15 +12,7 @@ pipeline {
                         sh '''
                         echo "GIT_USERNAME=${GIT_USERNAME}" > credentials.env
                         echo "GIT_PASSWORD=${GIT_PASSWORD}" >> credentials.env
-                        cat credentials.env
-                        '''
-
-                        sh '''
-                        echo '#!/bin/sh' > git-askpass.sh
-                        echo 'echo ${GIT_PASSWORD}' >> git-askpass.sh
-                        chmod +x git-askpass.sh
-
-                        GIT_ASKPASS=./git-askpass.sh git ls-remote https://${GIT_USERNAME}@github.com/arpansahu/great_chat
+                        ./update_all_projects_readme.sh
                         '''
                     }
                 }

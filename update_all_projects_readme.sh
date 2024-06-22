@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Source the credentials
+source ./credentials.env
+
+# Path to the GIT_ASKPASS helper script
+GIT_ASKPASS_HELPER="$(pwd)/git-askpass.sh"
+
+# Create the GIT_ASKPASS helper script
+echo '#!/bin/sh' > "$GIT_ASKPASS_HELPER"
+echo 'echo $GIT_PASSWORD' >> "$GIT_ASKPASS_HELPER"
+chmod +x "$GIT_ASKPASS_HELPER"
+
 # List of project repositories to clone
 REPOS=(
     "https://github.com/arpansahu/great_chat"
@@ -18,19 +29,13 @@ update_readme() {
     REPO_PATH="${repo_url#https://github.com/}"
     
     # Construct the authenticated URL
-    AUTHENTICATED_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${REPO_PATH}"
+    AUTHENTICATED_URL="https://${GIT_USERNAME}@github.com/${REPO_PATH}"
 
     # Log the URL being used (without exposing the password)
-    echo "Using URL: $AUTHENTICATED_URL"
+    echo "Using URL: https://${GIT_USERNAME}@github.com/${REPO_PATH}"
 
-    # Check if we can access the repository
-    echo "Checking access to repository: $repo_url"
-    if curl -u "${GIT_USERNAME}:${GIT_PASSWORD}" -o /dev/null -sIf "https://github.com/${REPO_PATH}"; then
-        echo "Successfully authenticated to repository: $repo_url"
-    else
-        echo "Failed to authenticate to repository: $repo_url"
-        return
-    fi
+    # Set the GIT_ASKPASS environment variable
+    export GIT_ASKPASS="$GIT_ASKPASS_HELPER"
 
     # Clone the repository using Jenkins credentials
     echo "Cloning repository: $AUTHENTICATED_URL"
@@ -79,20 +84,4 @@ update_readme() {
     # Navigate back to the script directory
     cd "$SCRIPT_DIR"
     
-    # Remove the cloned repository
-    rm -rf "$repo_name"
-}
-
-# Main script execution
-main() {
-    # Change to the directory where the script is located
-    cd "$SCRIPT_DIR"
-    
-    # Iterate over the list of repositories and update the Readme.md for each
-    for repo in "${REPOS[@]}"; do
-        update_readme "$repo"
-    done
-}
-
-# Execute the main function
-main
+    # Remove the​⬤
