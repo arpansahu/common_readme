@@ -14,6 +14,7 @@ Reference: https://docs.docker.com/engine/install/ubuntu/
        gnupg \
        lsb-release
        ```
+
    2. Add Docker’s official GPG key:
 
        ```bash
@@ -41,7 +42,7 @@ Reference: https://docs.docker.com/engine/install/ubuntu/
       1. Receiving a GPG error when running apt-get update?
 
          Your default umask may be incorrectly configured, preventing detection of the repository public key file. Try granting read permission for the Docker public key file before updating the package index:
-
+         
             ```bash
             sudo chmod a+r /etc/apt/keyrings/docker.gpg
             sudo apt-get update
@@ -52,7 +53,7 @@ Reference: https://docs.docker.com/engine/install/ubuntu/
         ```bash
         sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
         ```
-        
+
    3. Verify that the Docker Engine installation is successful by running the hello-world image:
 
         ```bash
