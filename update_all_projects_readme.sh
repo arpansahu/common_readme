@@ -42,7 +42,7 @@ update_readme() {
                 git config user.name "$GIT_USER_NAME"
                 git config user.email "$GIT_USER_EMAIL"
                 git commit -m "Update Readme.md"
-                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url}.git
+                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://}
             fi
         else
             echo "Readme.md not found after running update script for $repo_name"
