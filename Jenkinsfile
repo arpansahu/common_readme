@@ -9,19 +9,21 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh 'chmod +x update_all_projects_readme.sh'
-                        sh """
+                        sh '''
                         echo "GIT_USERNAME=${GIT_USERNAME}" > credentials.env
                         echo "GIT_PASSWORD=${GIT_PASSWORD}" >> credentials.env
-                        cat credentials.env  // For debugging purposes
+                        cat credentials.env
+                        '''
 
-                        # Use GIT_ASKPASS to provide credentials for git commands
+                        // Use GIT_ASKPASS to provide credentials for git commands
+                        sh '''
                         echo '#!/bin/sh' > git-askpass.sh
                         echo 'echo ${GIT_PASSWORD}' >> git-askpass.sh
                         chmod +x git-askpass.sh
 
-                        # Attempt to authenticate with the private repository
+                        // Attempt to authenticate with the private repository
                         GIT_ASKPASS=./git-askpass.sh git ls-remote https://${GIT_USERNAME}@github.com/arpansahu/great_chat
-                        """
+                        '''
                     }
                 }
             }
