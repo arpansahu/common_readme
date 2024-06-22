@@ -33,7 +33,7 @@ update_readme() {
     fi
 
     # Clone the repository using Jenkins credentials
-    echo "Cloning repository: $repo_url"
+    echo "Cloning repository: $AUTHENTICATED_URL"
     if git clone "$AUTHENTICATED_URL"; then
         echo "Successfully cloned repository: $repo_url"
     else
