@@ -15,7 +15,7 @@ pipeline {
                     sh """
                     echo "GIT_USERNAME=${CREDS_USR}" > credentials.env
                     echo "GIT_PASSWORD=${CREDS_PSW}" >> credentials.env
-                    cat credentials.env  // For debugging purposes
+                    cat credentials.env
                     """
                 }
             }
