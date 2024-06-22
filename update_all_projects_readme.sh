@@ -9,10 +9,6 @@ REPOS=(
 # Directory where the script is located
 SCRIPT_DIR=$(pwd)
 
-# Git user configuration
-GIT_USER_NAME="arpansahu"
-GIT_USER_EMAIL="arpanrocks95@gmail.com"
-
 # Function to update Readme.md for each repository
 update_readme() {
     local repo_url=$1
@@ -46,7 +42,7 @@ update_readme() {
                 git config user.name "$GIT_USER_NAME"
                 git config user.email "$GIT_USER_EMAIL"
                 git commit -m "Update Readme.md"
-                git push origin main
+                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url}.git
             fi
         else
             echo "Readme.md not found after running update script for $repo_name"
