@@ -20,6 +20,9 @@ update_readme() {
     # Construct the authenticated URL
     AUTHENTICATED_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${REPO_PATH}"
 
+    # Log the URL being used
+    echo "Using URL: $AUTHENTICATED_URL"
+
     # Clone the repository using Jenkins credentials
     echo "Cloning repository: $repo_url"
     if git clone "$AUTHENTICATED_URL"; then
