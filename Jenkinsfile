@@ -15,13 +15,11 @@ pipeline {
                         cat credentials.env
                         '''
 
-                        # Create the GIT_ASKPASS script
                         sh '''
                         echo '#!/bin/sh' > git-askpass.sh
                         echo 'echo ${GIT_PASSWORD}' >> git-askpass.sh
                         chmod +x git-askpass.sh
 
-                        # Attempt to authenticate with the private repository
                         GIT_ASKPASS=./git-askpass.sh git ls-remote https://${GIT_USERNAME}@github.com/arpansahu/great_chat
                         '''
                     }
