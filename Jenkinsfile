@@ -1,13 +1,22 @@
 pipeline {
     agent { label 'local' }
+    environment {
+        CREDS = credentials('a8543f6d-1f32-4a4c-bb31-d7fffe78828e')
+    }
     stages {
-        stage('Update READMEs') {
+        stage('Verify Credentials') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        sh 'chmod +x update_all_projects_readme.sh'
-                        sh 'GIT_USERNAME=${GIT_USERNAME} GIT_PASSWORD=${GIT_PASSWORD} ./update_all_projects_readme.sh'
-                    }
+                    // Print the credentials to verify they are being set correctly
+                    echo "GIT_USERNAME: ${CREDS_USR}"
+                    echo "GIT_PASSWORD: ${CREDS_PSW}"
+                    
+                    // Save credentials to a file for use in the script
+                    sh """
+                    echo "GIT_USERNAME=${CREDS_USR}" > credentials.env
+                    echo "GIT_PASSWORD=${CREDS_PSW}" >> credentials.env
+                    cat credentials.env  // For debugging purposes
+                    """
                 }
             }
         }
@@ -60,7 +69,7 @@ pipeline {
                                 ],
                                 "Subject": "${currentBuild.fullDisplayName} deployment failed",
                                 "TextPart": "Hola Development Team, your project ${currentBuild.fullDisplayName} deployment failed",
-                                "HTMLPart": "<h3>Hola Development Team, your project ${currentBuild.fullDisplayName} is not deployed, Build Failed </h3> <br> <p> Build Url: ${env.BUILD_URL}  </p>"
+                                "HTMLPart": "<h3>Hola Development Team, your project ${currentBuild.fullDisplayName} is not deployed, Build Failed </h3> < br> <p> Build Url: ${env.BUILD_URL}  </p>"
                         }
                 ]
             }'"""
