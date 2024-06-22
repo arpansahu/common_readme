@@ -84,4 +84,20 @@ update_readme() {
     # Navigate back to the script directory
     cd "$SCRIPT_DIR"
     
-    # Remove the​⬤
+    # Remove the cloned repository
+    rm -rf "$repo_name"
+}
+
+# Main script execution
+main() {
+    # Change to the directory where the script is located
+    cd "$SCRIPT_DIR"
+    
+    # Iterate over the list of repositories and update the Readme.md for each
+    for repo in "${REPOS[@]}"; do
+        update_readme "$repo"
+    done
+}
+
+# Execute the main function
+main
