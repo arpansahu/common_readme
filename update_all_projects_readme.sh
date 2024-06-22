@@ -16,10 +16,15 @@ update_readme() {
     
     # Clone the repository using Jenkins credentials
     echo "Cloning repository: $repo_url"
-    git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://}
+    if git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://github.com/}; then
+        echo "Successfully cloned repository: $repo_url"
+    else
+        echo "Failed to clone repository: $repo_url"
+        return
+    fi
     
     # Navigate to the repository directory
-    cd "$repo_name"
+    cd "$repo_name" || { echo "Failed to navigate to repository directory: $repo_name"; return; }
     
     # Common readme update script path within the project
     UPDATE_SCRIPT_PATH="readme_manager/update_readme.sh"
@@ -40,7 +45,11 @@ update_readme() {
             else
                 # Commit and push the changes using Jenkins credentials
                 git commit -m "Update Readme.md"
-                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://}
+                if git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://github.com/}; then
+                    echo "Successfully pushed changes for $repo_name"
+                else
+                    echo "Failed to push changes for $repo_name"
+                fi
             fi
         else
             echo "Readme.md not found after running update script for $repo_name"
