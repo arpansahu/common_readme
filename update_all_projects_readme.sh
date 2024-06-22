@@ -14,8 +14,11 @@ update_readme() {
     local repo_url=$1
     local repo_name=$(basename -s .git "$repo_url")
     
+    # Extract repository path from URL
+    REPO_PATH="${repo_url#https://github.com/}"
+    
     # Construct the authenticated URL
-    AUTHENTICATED_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://github.com/}"
+    AUTHENTICATED_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${REPO_PATH}"
 
     # Clone the repository using Jenkins credentials
     echo "Cloning repository: $repo_url"
