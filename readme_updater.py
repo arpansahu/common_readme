@@ -65,4 +65,4 @@ for placeholder, file_url in include_files.items():
 with open(new_readme_file, "w") as new_file:
     new_file.write(readme_content)
 
-print("README.md has been created with the referenced content.")
+print("Readme.md has been created with the referenced content.")
