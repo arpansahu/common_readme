@@ -67,6 +67,9 @@ update_readme() {
 
         # Check if Readme.md was created or updated
         if [ -f "Readme.md" ]; then
+            # Pull the latest changes from the remote repository
+            git pull --rebase
+
             # Stage the Readme.md file
             git add Readme.md
 
