@@ -13,7 +13,7 @@ and add your GitHub credentials from there
 
 * Add a .env file to you project using following command (This step is no more required stage('Dependencies'))
 
-    ```
+    ```bash
     sudo vi  /var/lib/jenkins/workspace/great_chat/.env
     ```
 

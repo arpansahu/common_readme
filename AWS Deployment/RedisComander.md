@@ -57,10 +57,12 @@ Redis Commander d'ont have native password protection enabled
     ```
 
 4. Test the Nginx Configuration
+
     ```bash
     sudo nginx -t
     ```
 5. Reload Nginx to apply the new configuration
+
     ```bash
     sudo systemctl reload nginx
     ```
@@ -68,12 +70,14 @@ Redis Commander d'ont have native password protection enabled
 ### Running Redis Commander in background Using pm2
 
 1.	Install pm2 globally (if not already installed):
+
     ```bash
     npm install -g pm2
     ```
 
 
 2. Start redis-commander with pm2:
+
     ```bash
     pm2 start redis-commander --name redis-commander -- --port 9996 --redis-host your-redis-server-ip --redis-port your-redis-port --redis-password your-redis-password
     ```
@@ -101,11 +105,13 @@ Now, redis-commander is running in the background managed by pm2. You can view i
     ```
 
     Restart the process:
+
     ```bash
     pm2 restart redis-commander
     ```
 
     View logs:
+
     ```bash
     pm2 logs redis-commander
     ```

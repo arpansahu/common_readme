@@ -147,6 +147,7 @@ Note: Nginx is already set in the other steps as seen before right now I will di
     sudo vi /usr/local/bin/update_minio_certs.sh
     ```
 
+
 2. Add this script to update_minio_certs.sh
     ```bash
     #!/bin/bash
@@ -219,6 +220,7 @@ Note: Nginx is already set in the other steps as seen before right now I will di
 
 
 3. Changing permissions to execute update_minio_certs.sh
+
     ```bash
     sudo chmod +x /usr/local/bin/update_minio_certs.sh
     ```
@@ -235,11 +237,13 @@ Note: Nginx is already set in the other steps as seen before right now I will di
     ```
 
 5. Install mailjet-rest python module
+
     ```bash
     pip install mailjet-rest
     ```
 
 6. Test the script 
+
     ```bash
         cd /usr/local/bin
         ./update_minio_certs.sh

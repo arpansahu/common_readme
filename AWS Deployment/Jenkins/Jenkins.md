@@ -8,7 +8,7 @@ There are multiple Java implementations which you can use. OpenJDK is the most p
 
 Update the Debian apt repositories, install OpenJDK 11, and check the installation with the commands:
 
-```
+```bash
 sudo apt update
 
 sudo apt install openjdk-11-jre
@@ -21,7 +21,7 @@ OpenJDK 64-Bit Server VM (build 11.0.12+7-post-Debian-2, mixed mode, sharing)
 
 Long Term Support release
 
-```
+```bash
 curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
   /usr/share/keyrings/jenkins-keyring.asc > /dev/null
 echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
@@ -33,31 +33,32 @@ sudo apt-get install jenkins
 
 Start Jenkins
 
-```
+```bash
 sudo systemctl enable jenkins
 ```
 
 You can start the Jenkins service with the command:
 
-```
+```bash
 sudo systemctl start jenkins
 ```
 
 You can check the status of the Jenkins service using the command:
-```
+
+```bash
 sudo systemctl status jenkins
 ```
 
 Now for serving the Jenkins UI from Nginx add the following lines to the Nginx file located at 
 /etc/nginx/sites-available/arpansahu by running the following command
 
-```
+```bash
 sudo vi /etc/nginx/sites-available/arpansahu
 ```
 
 * Add these lines to it.
 
-    ```
+    ```bash
     server {
         listen         80;
         server_name    jenkins.arpansahu.me;
@@ -90,6 +91,7 @@ inside /etc/sudoers file
 
 and then put 
 
+```bash
 stage('Dependencies') {
             steps {
                 script {
@@ -97,6 +99,7 @@ stage('Dependencies') {
                 }
             }
         }
+```
 
 in Jenkinsfile
 

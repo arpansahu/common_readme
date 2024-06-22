@@ -14,7 +14,7 @@ The `update_readme.sh` script performs the following actions:
 
 To run the `update_readme.sh` script, navigate to the `readme_manager` directory and execute the script:
 
-```sh
+```bash
 cd readme_manager
 ./update_readme.sh
 ```

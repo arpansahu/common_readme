@@ -64,37 +64,40 @@ vi /root/pgadmin_venv/lib/python3.10/site-packages/pgadmin4/config.py
     ```bash
     sudo vi /etc/nginx/sites-available/arpansahu
     ```
+
 2. Add this server configuration
 
-```bash
-server {
-    listen         80;
-    server_name    pgadmin.arpansahu.me;
-    # force https-redirects
-    if ($scheme = http) {
-        return 301 https://$server_name$request_uri;
+    ```bash
+    server {
+        listen         80;
+        server_name    pgadmin.arpansahu.me;
+        # force https-redirects
+        if ($scheme = http) {
+            return 301 https://$server_name$request_uri;
+            }
+
+        location / {
+            proxy_pass              http://0.0.0.0:9997;
+            proxy_set_header        Host $host;
+            proxy_set_header    X-Forwarded-Proto $scheme;
         }
 
-    location / {
-         proxy_pass              http://0.0.0.0:9997;
-         proxy_set_header        Host $host;
-         proxy_set_header    X-Forwarded-Proto $scheme;
+        listen 443 ssl; # managed by Certbot
+        ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
+        ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
+        include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
     }
-
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-}
-```
+    ```
 
 3. Test the Nginx Configuration
+
     ```bash
     sudo nginx -t
     ```
 
 4. Reload Nginx to apply the new configuration
+
     ```bash
     sudo systemctl reload nginx
     ```

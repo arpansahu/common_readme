@@ -1,6 +1,6 @@
 Change settings.py static files and media files settings | Now I have added support for BlackBlaze Static Storage also which also based on AWS S3 protocols 
 
-``` 
+```python
 if not DEBUG:
     BUCKET_TYPE = config('BUCKET_TYPE')
 
@@ -108,4 +108,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"), ]
 ```
 
-run below command ```python manage.py collectstatic```  and you are good to go
+run below command 
+
+```bash
+python manage.py collectstatic
+```
+
+and you are good to go
