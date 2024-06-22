@@ -27,22 +27,26 @@ update_readme() {
     
     # Common readme update script path within the project
     UPDATE_SCRIPT_PATH="readme_manager/update_readme.sh"
-
+    
     # Run the update_readme.sh script
     if [ -f "$UPDATE_SCRIPT_PATH" ]; then
         echo "Running update script: $UPDATE_SCRIPT_PATH"
         bash "$UPDATE_SCRIPT_PATH"
         
         # Check if Readme.md was created or updated
-        if git diff --exit-code Readme.md; then
-            echo "Readme.md not changed for $repo_name"
+        if [ -f "Readme.md" ]; then
+            if git diff --exit-code Readme.md; then
+                echo "Readme.md not changed for $repo_name"
+            else
+                # Commit and push the changes
+                git config user.name "$GIT_USER_NAME"
+                git config user.email "$GIT_USER_EMAIL"
+                git add Readme.md
+                git commit -m "Update Readme.md"
+                git push origin main
+            fi
         else
-            # Commit and push the changes
-            git config user.name "$GIT_USER_NAME"
-            git config user.email "$GIT_USER_EMAIL"
-            git add Readme.md
-            git commit -m "Update Readme.md"
-            git push origin main
+            echo "Readme.md not found after running update script for $repo_name"
         fi
     else
         echo "Update script not found: $UPDATE_SCRIPT_PATH"
