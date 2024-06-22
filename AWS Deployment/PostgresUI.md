@@ -27,6 +27,12 @@
    pgadmin4
    ```
 
+    To ensure pgAdmin runs in the background, use `nohup`:
+
+    ```bash
+    nohup pgadmin4 &>/dev/null &
+    ```
+    
 By using a virtual environment, you avoid potential conflicts with system packages, and you can manage dependencies for pgAdmin 4 more effectively.
 
 Remember to activate your virtual environment whenever you want to run pgAdmin 4:
@@ -43,7 +49,6 @@ deactivate
 ```
 
 
-This approach should help you manage the dependencies and resolve the version conflicts more effectively.
 
 4. Edit Host from 127.0.0.1 tto 0.0.0.0
 
@@ -93,3 +98,7 @@ server {
     ```bash
     sudo systemctl reload nginx
     ```
+
+### Conclusion
+
+This approach should help you manage the dependencies and resolve the version conflicts more effectively while ensuring pgAdmin runs in the background and is accessible via Nginx as a reverse proxy.
