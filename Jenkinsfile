@@ -12,7 +12,7 @@ pipeline {
                         sh '''
                         echo "GIT_USERNAME=${GIT_USERNAME}" > credentials.env
                         echo "GIT_PASSWORD=${GIT_PASSWORD}" >> credentials.env
-                        ./update_all_projects_readme.sh
+                        ./update_all_projects_readme.sh prod
                         '''
                     }
                 }
