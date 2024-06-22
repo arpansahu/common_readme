@@ -23,10 +23,6 @@ update_readme() {
     # Log the URL being used (without exposing the password)
     echo "Using URL: $AUTHENTICATED_URL"
 
-    # Log the credentials (for debugging purposes, ensure to remove this after debugging)
-    echo "GIT_USERNAME: ${GIT_USERNAME}"
-    echo "GIT_PASSWORD: ${GIT_PASSWORD}"
-
     # Check if we can access the repository
     echo "Checking access to repository: $repo_url"
     if curl -u "${GIT_USERNAME}:${GIT_PASSWORD}" -o /dev/null -sIf "https://github.com/${REPO_PATH}"; then
