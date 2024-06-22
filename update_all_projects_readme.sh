@@ -14,9 +14,12 @@ update_readme() {
     local repo_url=$1
     local repo_name=$(basename -s .git "$repo_url")
     
+    # Construct the authenticated URL
+    AUTHENTICATED_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://github.com/}"
+
     # Clone the repository using Jenkins credentials
     echo "Cloning repository: $repo_url"
-    if git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://github.com/}; then
+    if git clone "$AUTHENTICATED_URL"; then
         echo "Successfully cloned repository: $repo_url"
     else
         echo "Failed to clone repository: $repo_url"
@@ -45,7 +48,7 @@ update_readme() {
             else
                 # Commit and push the changes using Jenkins credentials
                 git commit -m "Update Readme.md"
-                if git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${repo_url#https://github.com/}; then
+                if git push "$AUTHENTICATED_URL"; then
                     echo "Successfully pushed changes for $repo_name"
                 else
                     echo "Failed to push changes for $repo_name"
