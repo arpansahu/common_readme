@@ -4,19 +4,25 @@ pipeline {
         CREDS = credentials('a8543f6d-1f32-4a4c-bb31-d7fffe78828e')
     }
     stages {
-        stage('Verify Credentials') {
+        stage('Verify Credentials and Authenticate Repository') {
             steps {
                 script {
-                    // Print the credentials to verify they are being set correctly
-                    echo "GIT_USERNAME: ${CREDS_USR}"
-                    echo "GIT_PASSWORD: ${CREDS_PSW}"
-                    
-                    // Save credentials to a file for use in the script
-                    sh """
-                    echo "GIT_USERNAME=${CREDS_USR}" > credentials.env
-                    echo "GIT_PASSWORD=${CREDS_PSW}" >> credentials.env
-                    cat credentials.env
-                    """
+                    withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        sh 'chmod +x update_all_projects_readme.sh'
+                        sh """
+                        echo "GIT_USERNAME=${GIT_USERNAME}" > credentials.env
+                        echo "GIT_PASSWORD=${GIT_PASSWORD}" >> credentials.env
+                        cat credentials.env  // For debugging purposes
+
+                        # Use GIT_ASKPASS to provide credentials for git commands
+                        echo '#!/bin/sh' > git-askpass.sh
+                        echo 'echo ${GIT_PASSWORD}' >> git-askpass.sh
+                        chmod +x git-askpass.sh
+
+                        # Attempt to authenticate with the private repository
+                        GIT_ASKPASS=./git-askpass.sh git ls-remote https://${GIT_USERNAME}@github.com/arpansahu/great_chat
+                        """
+                    }
                 }
             }
         }
