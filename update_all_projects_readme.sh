@@ -35,13 +35,16 @@ update_readme() {
         
         # Check if Readme.md was created or updated
         if [ -f "Readme.md" ]; then
-            if git diff --exit-code Readme.md; then
+            # Stage the Readme.md file
+            git add Readme.md
+            
+            # Check if there are any differences between the working directory and the index
+            if git diff --cached --exit-code Readme.md; then
                 echo "Readme.md not changed for $repo_name"
             else
                 # Commit and push the changes
                 git config user.name "$GIT_USER_NAME"
                 git config user.email "$GIT_USER_EMAIL"
-                git add Readme.md
                 git commit -m "Update Readme.md"
                 git push origin main
             fi
