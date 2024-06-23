@@ -72,6 +72,10 @@ update_readme() {
             # Stage the Readme.md file
             git add Readme.md
 
+            # Print the difference detected
+            echo "Checking differences for Readme.md"
+            git diff --cached Readme.md
+
             # Check if there are any differences between the working directory and the index
             if git diff --cached --exit-code Readme.md; then
                 echo "Readme.md not changed for $repo_name"
