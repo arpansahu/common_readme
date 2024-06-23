@@ -52,6 +52,7 @@ Remember to configure your PostgreSQL server according to your security needs, s
 ## Configuring Postgresql
 
 1. open postgresql.conf file
+
     ```bash
     sudo vi /etc/postgresql/14/main/postgresql.conf
     ```
@@ -67,6 +68,7 @@ Remember to configure your PostgreSQL server according to your security needs, s
     Now the thing is if u don't want to serve it using nginx u can also set it to * all so that database can be connected from any where
 
 3. 	Edit pg_hba.conf to allow connections:
+
     ```bash
     sudo nano /etc/postgresql/14/main/pg_hba.conf
     ```
@@ -74,11 +76,13 @@ Remember to configure your PostgreSQL server according to your security needs, s
     14 is the version which i have installed your version can be different
 
 4. 	Add the following line in the end:
+
     ```bash
     host    all             all             127.0.0.1/32            md5
     ```
 
     if u want to use without nginx
+
     ```bash
     host    all             all             0.0.0.0/0            md5
     ```
@@ -86,6 +90,7 @@ Remember to configure your PostgreSQL server according to your security needs, s
     I have added both 
 
 5. Restart PostgreSQL to apply changes:
+
     ```bash
     sudo systemctl restart postgresql
     ```
@@ -143,9 +148,11 @@ Note: In previous steps we have already seen how to setup the reverse proxy with
     Follow these steps: 
 
         0.	Remove the custom configuration file:
+
             ```bash
             sudo rm /etc/nginx/conf.d/postgresql.conf
             ```
+
         1.	Open the main Nginx configuration file: 
 
             ```bash
@@ -206,6 +213,7 @@ Note: In previous steps we have already seen how to setup the reverse proxy with
             ```
         
         3.	Test the Nginx Configuration
+        
             ```bash
             sudo nginx -t
             ```

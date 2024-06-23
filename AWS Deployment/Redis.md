@@ -34,6 +34,7 @@ Note: if u want to use ssl connection you can
 
 /etc/redis/redis.conf open this file and 
 
+```bash
 tls-port 6379
 port 0
 
@@ -42,6 +43,7 @@ tls-key-file /path/to/redis.key
 tls-dh-params-file /path/to/dhparam.pem
 
 tls-auth-clients no
+```
 
 Add this configuration 
 

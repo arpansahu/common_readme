@@ -6,7 +6,9 @@
     ```bash
     npm install -g redis-commander
     ```
+
 2. Run
+
     ```bash
     redis-commander --redis-host your-redis-server-ip --redis-port your-redis-port --redis-password your-redis-password --port 9996
     ```
@@ -61,6 +63,7 @@ Redis Commander d'ont have native password protection enabled
     ```bash
     sudo nginx -t
     ```
+    
 5. Reload Nginx to apply the new configuration
 
     ```bash

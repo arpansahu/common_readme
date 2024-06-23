@@ -38,6 +38,7 @@ Keep in mind that the instructions provided here assume a basic setup. For produ
     ```bash
     sudo vi /etc/nginx/sites-available/arpansahu
     ```
+
 2. Add this server configuration
 
     ```bash
@@ -64,11 +65,13 @@ Keep in mind that the instructions provided here assume a basic setup. For produ
     ```
 
 3. Test the Nginx Configuration
+
     ```bash
     sudo nginx -t
     ```
 
 4. Reload Nginx to apply the new configuration
+
     ```bash
     sudo systemctl reload nginx
     ```

@@ -1,6 +1,7 @@
 ### Installing Minio
 
 1. Install MinIO on your server. You can download it from the official website or use a package manager if available.
+
     ```bash
     wget https://dl.min.io/server/minio/release/linux-amd64/minio
     chmod +x minio
@@ -22,6 +23,7 @@
 
 4. Environment File Configuration
     Ensure your environment file, usually located at /etc/default/minio, has the following content: if the file is not present create it
+
     ```bash
     MINIO_VOLUMES="/mnt/minio"
 
@@ -63,6 +65,7 @@ Note: minio api and ui server both run at 0.0.0.0 host by default
 Note: Nginx is already set in the other steps as seen before right now I will discuss server configuration for minio and minioui
 
 1. Nginx Server configuration for minio API server 
+
      ```bash
     server {
         listen         80;
@@ -113,6 +116,7 @@ Note: Nginx is already set in the other steps as seen before right now I will di
     ```
 
 2. Nginx Server configuration for minio ui server 
+
     ```bash
     server {
         listen         80;
@@ -140,15 +144,18 @@ Note: Nginx is already set in the other steps as seen before right now I will di
         ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
     }
     ```
+
 #### Setup Copy Cron to copy whenever cerbot updates the certificate to /etc/minio/certs
 
 1. Create a Cron Shell file 
+
     ```bash
     sudo vi /usr/local/bin/update_minio_certs.sh
     ```
 
 
 2. Add this script to update_minio_certs.sh
+
     ```bash
     #!/bin/bash
     # Paths to the Let's Encrypt certificates
@@ -224,6 +231,7 @@ Note: Nginx is already set in the other steps as seen before right now I will di
     ```bash
     sudo chmod +x /usr/local/bin/update_minio_certs.sh
     ```
+    
 4.  Update Cron Job or Systemd Timer
 
     ```bash
