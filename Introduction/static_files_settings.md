@@ -114,4 +114,4 @@ run below command
 python manage.py collectstatic
 ```
 
-and you are good to go
+and you are good to go test
