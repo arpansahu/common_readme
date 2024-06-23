@@ -46,13 +46,14 @@
 Now in your Git Repository
 
 Create a file named Dockerfile with no extension and add following lines in it
-```
+
+```bash
 [Dockerfile]
 ```
 
 Create a file named docker-compose.yml and add following lines in it
 
-```
+```bash
 [docker-compose.yml]
 ```
 
