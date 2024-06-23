@@ -113,11 +113,16 @@ main() {
     # Change to the directory where the script is located
     cd "$SCRIPT_DIR"
 
+    # Determine the specific repository to update if provided, else update all
+    SPECIFIC_REPO=$2
+
     # Iterate over the list of repositories and update the Readme.md for each
     for repo in "${REPOS[@]}"; do
-        update_readme "$repo"
+        if [ -z "$SPECIFIC_REPO" ] || [ "$repo" == "$SPECIFIC_REPO" ]; then
+            update_readme "$repo"
+        fi
     done
 }
 
-# Execute the main function with provided argument or default to prod
+# Execute the main function with provided arguments or default to prod environment and all repositories
 main "$@"
