@@ -4,7 +4,7 @@ pipeline {
         CREDS = credentials('a8543f6d-1f32-4a4c-bb31-d7fffe78828e')
     }
     parameters {
-        string(name: 'project_name', defaultValue: '', description: 'Project name to process')
+        string(name: 'project_git_url', defaultValue: '', description: 'Project name to process')
         string(name: 'environment', defaultValue: 'prod', description: 'Environment to run the script in')
     }
     stages {
@@ -14,8 +14,8 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh 'chmod +x update_all_projects_readme.sh'
                         sh """
-                        echo "Running update_all_projects_readme.sh script for project: ${params.project_name} in environment: ${params.environment}"
-                        ./update_all_projects_readme.sh ${params.environment} ${params.project_name}
+                        echo "Running update_all_projects_readme.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
+                        ./update_all_projects_readme.sh ${params.environment} ${params.project_git_url}
                         """
                     }
                 }
