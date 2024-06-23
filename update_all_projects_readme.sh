@@ -3,12 +3,19 @@
 # Function to set up the environment
 setup_environment() {
     if [ "$ENVIRONMENT" != "local" ]; then
-        source ./credentials.env
+        if [ -f ./credentials.env ]; then
+            echo "Sourcing credentials.env file"
+            source ./credentials.env
+        else
+            echo "credentials.env file not found"
+            exit 1
+        fi
 
         # Path to the GIT_ASKPASS helper script
         GIT_ASKPASS_HELPER="$(pwd)/git-askpass.sh"
 
         # Create the GIT_ASKPASS helper script
+        echo "Creating GIT_ASKPASS helper script"
         echo '#!/bin/sh' > "$GIT_ASKPASS_HELPER"
         echo 'echo $GIT_PASSWORD' >> "$GIT_ASKPASS_HELPER"
         chmod +x "$GIT_ASKPASS_HELPER"
