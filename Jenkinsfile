@@ -10,9 +10,6 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh 'chmod +x update_all_projects_readme.sh'
                         sh '''
-                        echo "Creating credentials.env file"
-                        echo "GIT_USERNAME=${GIT_USERNAME}" > credentials.env
-                        echo "GIT_PASSWORD=${GIT_PASSWORD}" >> credentials.env
                         echo "Running update_all_projects_readme.sh script"
                         ./update_all_projects_readme.sh prod
                         '''
