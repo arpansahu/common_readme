@@ -8,6 +8,7 @@ new_readme_file = "../Readme.md"
 # Define a dictionary with the placeholders and their corresponding GitHub raw URLs or local paths
 include_files = {
     "README of Docker Installation": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Docker%20Readme/docker_installation.md",
+    "DOCKER_END": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Docker%20Readme/docker_end.md",
     "README of Nginx Setup": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/nginx.md",
     "README of Jenkins Setup": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/Jenkins/Jenkins.md",
     "JENKINS_END": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/Jenkins/jenkins_end.md",
