@@ -96,6 +96,7 @@ update_readme() {
             fi
 
             # COPY readme.html to this arpansahu.me repository (here our command line is still in the root directory of $repo_name)
+            echo "COPY readme_manager_html_detailed/readme.html to this arpansahu.me repository $repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
             cp "readme_manager_html_detailed/readme.html" "$repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
             
             # Navigate to the repository directory
