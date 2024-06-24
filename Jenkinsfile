@@ -17,6 +17,12 @@ pipeline {
                         echo "Running update_all_projects_readme.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
                         ./update_all_projects_readme.sh ${params.environment} ${params.project_git_url}
                         """
+
+                        sh 'chmod +x update_all_projects_readme_htmls.sh'
+                        sh """
+                        echo "Running update_all_projects_readme_htmls.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
+                        ./update_all_projects_readme_htmls.sh ${params.environment} ${params.project_git_url}
+                        """
                     }
                 }
             }
