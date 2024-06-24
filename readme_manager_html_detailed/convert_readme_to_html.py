@@ -145,5 +145,5 @@ def process_markdown_to_html(input_file, intermediate_file, output_file):
 # Example usage
 input_file = '../Readme.md'
 intermediate_file = 'Readme_converted.md'
-output_file = 'Readme.html'
+output_file = 'readme.html'
 process_markdown_to_html(input_file, intermediate_file, output_file)
