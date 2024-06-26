@@ -17,7 +17,7 @@ def fetch_content(file_url):
             return response.text
         except requests.RequestException as e:
             print(f"Error fetching {file_url}: {e}")
-            return ""
+            raise FileNotFoundError(f"Error fetching {file_url}: {e}")
     else:
         try:
             with open(file_url, "r") as local_file:
@@ -25,7 +25,7 @@ def fetch_content(file_url):
                 return local_file.read()
         except FileNotFoundError as e:
             print(f"Error reading local file {file_url}: {e}")
-            return ""
+            raise
 
 # Function to recursively replace placeholders
 def include_file_content(content, include_files):
@@ -40,8 +40,12 @@ def include_file_content(content, include_files):
             if placeholder_tag in content:
                 placeholders_found = True
                 print(f"Found placeholder: {placeholder_tag}")
-                included_content = fetch_content(file_url)
-                content = content.replace(placeholder_tag, included_content)
+                try:
+                    included_content = fetch_content(file_url)
+                    content = content.replace(placeholder_tag, included_content)
+                except FileNotFoundError as e:
+                    print(f"Stopping process due to missing file: {e}")
+                    return None
         iteration += 1
     
     return content
@@ -57,8 +61,10 @@ else:
     # Replace all placeholders with their corresponding file content from GitHub or local files
     readme_content = include_file_content(readme_content, include_files)
 
-    # Write the updated content to the new README file
-    with open(new_readme_file, "w") as new_file:
-        new_file.write(readme_content)
-
-    print("Readme.md has been created with the referenced content.")
+    if readme_content is not None:
+        # Write the updated content to the new README file
+        with open(new_readme_file, "w") as new_file:
+            new_file.write(readme_content)
+        print("Readme.md has been created with the referenced content.")
+    else:
+        print("Process stopped due to missing file.")
