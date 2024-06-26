@@ -51,5 +51,3 @@ There are a few files which are common for all projects. For convenience, these 
 ```
 
 Also, remember if you want to include new files, you need to change the `baseREADME` file and the `include_files` array in the `common_readme` repository itself.
-
-added test text

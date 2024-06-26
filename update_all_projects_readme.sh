@@ -81,7 +81,7 @@ update_readme() {
                 echo "Readme.md not changed for $repo_name"
             else
                 # Commit and push the changes
-                git commit -m "Update Readme.md"
+                git commit -m "Automatic Update Readme.md"
                 if git push "$AUTHENTICATED_URL"; then
                     echo "Successfully pushed changes for $repo_name"
                 else
