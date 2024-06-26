@@ -4,7 +4,7 @@ from include_files import include_files
 
 # Define the main base README file and the new README file
 base_readme_file = os.path.join(os.path.dirname(__file__), "baseREADME.md")
-new_readme_file = os.path.join(os.path.dirname(__file__), "..", "Readme.md")
+new_readme_file = os.path.join(os.path.dirname(__file__), "..", "README.md")
 
 # Function to fetch content from a URL or local file
 def fetch_content(file_url):
@@ -65,6 +65,6 @@ else:
         # Write the updated content to the new README file
         with open(new_readme_file, "w") as new_file:
             new_file.write(readme_content)
-        print("Readme.md has been created with the referenced content.")
+        print("README.md has been created with the referenced content.")
     else:
         print("Process stopped due to missing file.")

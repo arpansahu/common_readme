@@ -28,7 +28,7 @@ REPOS=(
 # Directory where the script is located
 SCRIPT_DIR=$(pwd)
 
-# Function to update Readme.md for each repository
+# Function to update README.md for each repository
 update_readme() {
     local repo_url=$1
     local repo_name=$(basename -s .git "$repo_url")
@@ -102,7 +102,7 @@ update_readme() {
             # Navigate to the repository directory
             cd "$repo_arpansahu_name" || { echo "Failed to navigate to repository directory: $repo_arpansahu_name"; return; }
 
-            # Stage the Readme.md file
+            # Stage the README.md file
             git add templates/modules/project_detailed/project_partials/great_chat/readme.html
 
             echo "Checking differences for readme.html"
@@ -148,7 +148,7 @@ main() {
     # Determine the specific repository to update if provided, else update all
     SPECIFIC_REPO=$2
 
-    # Iterate over the list of repositories and update the Readme.md for each
+    # Iterate over the list of repositories and update the README.md for each
     for repo in "${REPOS[@]}"; do
         if [ -z "$SPECIFIC_REPO" ] || [ "$repo" == "$SPECIFIC_REPO" ]; then
             update_readme "$repo"

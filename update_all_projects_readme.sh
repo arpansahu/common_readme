@@ -26,7 +26,7 @@ REPOS=(
 # Directory where the script is located
 SCRIPT_DIR=$(pwd)
 
-# Function to update Readme.md for each repository
+# Function to update README.md for each repository
 update_readme() {
     local repo_url=$1
     local repo_name=$(basename -s .git "$repo_url")
@@ -64,24 +64,24 @@ update_readme() {
         echo "Running update script: $UPDATE_SCRIPT_PATH"
         bash "$UPDATE_SCRIPT_PATH"
 
-        # Check if Readme.md was created or updated
-        if [ -f "Readme.md" ]; then
+        # Check if README.md was created or updated
+        if [ -f "README.md" ]; then
             # Pull the latest changes from the remote repository
             git pull --rebase
 
-            # Stage the Readme.md file
-            git add Readme.md
+            # Stage the README.md file
+            git add README.md
 
             # Print the difference detected
-            echo "Checking differences for Readme.md"
-            git diff --cached Readme.md
+            echo "Checking differences for README.md"
+            git diff --cached README.md
 
             # Check if there are any differences between the working directory and the index
-            if git diff --cached --exit-code Readme.md; then
-                echo "Readme.md not changed for $repo_name"
+            if git diff --cached --exit-code README.md; then
+                echo "README.md not changed for $repo_name"
             else
                 # Commit and push the changes
-                git commit -m "Automatic Update Readme.md"
+                git commit -m "Automatic Update README.md"
                 if git push "$AUTHENTICATED_URL"; then
                     echo "Successfully pushed changes for $repo_name"
                 else
@@ -89,7 +89,7 @@ update_readme() {
                 fi
             fi
         else
-            echo "Readme.md not found after running update script for $repo_name"
+            echo "README.md not found after running update script for $repo_name"
         fi
     else
         echo "Update script not found: $UPDATE_SCRIPT_PATH"
@@ -116,7 +116,7 @@ main() {
     # Determine the specific repository to update if provided, else update all
     SPECIFIC_REPO=$2
 
-    # Iterate over the list of repositories and update the Readme.md for each
+    # Iterate over the list of repositories and update the README.md for each
     for repo in "${REPOS[@]}"; do
         if [ -z "$SPECIFIC_REPO" ] || [ "$repo" == "$SPECIFIC_REPO" ]; then
             update_readme "$repo"

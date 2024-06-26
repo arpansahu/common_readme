@@ -143,7 +143,7 @@ def process_markdown_to_html(input_file, intermediate_file, output_file):
     print(f"Conversion complete. The HTML content has been saved to {output_file}")
 
 # Example usage
-input_file = '../Readme.md'
+input_file = '../README.md'
 intermediate_file = 'Readme_converted.md'
 output_file = 'readme.html'
 process_markdown_to_html(input_file, intermediate_file, output_file)
