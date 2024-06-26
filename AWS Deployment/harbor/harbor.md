@@ -1,3 +1,8 @@
+
+## Harbor (Self hosted Private Docker Registry)
+
+Harbor is an open-source container image registry that secures images with role-based access control, scans images for vulnerabilities, and signs images as trusted. It extends the Docker Distribution by adding functionalities usually required by enterprise users, such as security, identity, and management.
+
 ### Installing Harbor
 
 1. **Download Harbor:**
@@ -57,16 +62,27 @@
         thats why we will change these both ports to available free port on the machine. I picked 8081 for http and 8443 for https. You can choose accordingly.
 
 
-    3. Edit harbor.yml 
+    3. Edit docker-compose.yml
+
+        ```bash
+            vi docker-compose.yml
+        ```
 
         ```bash
         [HARBOR DOCKER COMPOSE]
         ```
 
-       
+        As you can see the ports we used in harbor.yml are configured here and nginx service have been removed.
+        ports:
+          - 8081:8080
+          - 8443:8443
+          - 4443:4443
 
-4. **Connect Portainer to the Docker Daemon:**
-   On the Portainer setup page, choose the "Docker" environment, and connect Portainer to the Docker daemon. You can usually use the default settings (`unix:///var/run/docker.sock` for the Docker API endpoint).
+4. **Run the Harbor install script:**
+   
+   ```bash
+    sudo ./install.sh --with-notary --with-trivy --with-chartmuseum
+   ```
 
 5. **Complete Setup:**
    Follow the on-screen instructions to complete the setup process. You may choose to deploy a local agent for better performance, but it's not required for basic functionality.
@@ -89,14 +105,14 @@ Keep in mind that the instructions provided here assume a basic setup. For produ
     ```bash
     server {
         listen         80;
-        server_name    portainer.arpansahu.me;
+        server_name    harbor.arpansahu.me;
         # force https-redirects
         if ($scheme = http) {
             return 301 https://$server_name$request_uri;
             }
 
         location / {
-            proxy_pass              http://0.0.0.0:9998;
+            proxy_pass              https://127.0.0.1:8443;
             proxy_set_header        Host $host;
             proxy_set_header    X-Forwarded-Proto $scheme;
         }
@@ -121,78 +137,16 @@ Keep in mind that the instructions provided here assume a basic setup. For produ
     sudo systemctl reload nginx
     ```
 
-### Running Portainer Agent 
+### Access Harbor UI
 
-1. Run this command to start the portainer agent docker container
+Harbor UI can be accessed here : https://portainer.arpansahu.me/
 
-    ```bash
-        docker run -d -p 9995:9001 \
-        --name portainer_agent \
-        --restart=always \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v /var/lib/docker/volumes:/var/lib/docker/volumes \
-        portainer/agent:2.19.5
-    ```
+### Connecting Docker Registry 
 
-2. Configuring Nginx as Reverse proxy
+Login to Docker Registry
 
-    1. Edit Nginx Configuration
+You can connect to my Docker Registry  
 
-    ```bash
-    sudo vi /etc/nginx/sites-available/arpansahu
-    ```
-
-    2. Add this server configuration
-
-        ```bash
-        server {
-            listen         80;
-            server_name    portainer-agent.arpansahu.me;
-            # force https-redirects
-            if ($scheme = http) {
-                return 301 https://$server_name$request_uri;
-                }
-
-            location / {
-                proxy_pass              http://0.0.0.0:9995;
-                proxy_set_header        Host $host;
-                proxy_set_header    X-Forwarded-Proto $scheme;
-            }
-
-            listen 443 ssl; # managed by Certbot
-            ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
-            ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
-            include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-        }
-        ```
-
-    3. Test the Nginx Configuration
-
-        ```bash
-        sudo nginx -t
-        ```
-
-    4. Reload Nginx to apply the new configuration
-
-        ```bash
-        sudo systemctl reload nginx
-        ```
-3. Adding Environment
-
-    1. Go to environment ---> Choose Docker Standalone ----> Start Wizard
-
-    2. Will show you a command same as step 1. Run this command to start the portainer agent docker container, this is default command we have modified ports although
-
-        ```bash
-            docker run -d -p 9001:9001 \    
-            --name portainer_agent \
-            --restart=always \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v /var/lib/docker/volumes:/var/lib/docker/volumes \
-            portainer/agent:2.19.5
-        ```
-
-    3. Add Name, I have used docker-prod-env
-    4. Add Environment address domain:port combination is needed in my case portainer-agent.arpansahu.me: 9995
-    5. Click Connect
+```bash
+    docker login harbor.arpansahu.me
+```

@@ -1,3 +1,9 @@
+## Postgresql Server
+
+IT would be a nightmare to have your own vps to save cost and not hosting your own postgresql server.
+
+postgresql_server can be access accessed
+
 ### Installing PostgreSql
 
 1. Update the package list to make sure you have the latest information
@@ -231,3 +237,6 @@ Note: In previous steps we have already seen how to setup the reverse proxy with
     ```
 
     
+```bash
+psql "postgres://user:user_pass@arpansahu.me/database_name?sslmode=require"
+```

@@ -1,3 +1,7 @@
+## Redis Server
+
+Redis is versatile and widely used for its speed and efficiency in various applications. Its ability to serve different roles, such as caching, real-time analytics, and pub/sub messaging, makes it a valuable tool in many technology stacks.
+
 ### Installing Redis
 
 1. **Create a Docker Volume for Portainer Data (optional but recommended):**
@@ -50,3 +54,9 @@ Add this configuration
 Mostly redis is used as cache and we want it to be super fast hence we are not putting it behind reverse proxy e.g. nginx same as postgres
 
 Also one more thing redis by default don't support ssl connections even if u use ssl
+
+redis server can be accessed
+
+```bash
+redis-cli -h arpansahu.me -p 6379 -a password_required
+```
