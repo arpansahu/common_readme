@@ -31,6 +31,7 @@ include_files = {
     
     # project partials files
     "INTRODUCTION": "../readme_manager/partials/introduction.md",
+    "INTRODUCTION MAIN": "../readme_manager/partials/introduction_main.md",
     "DOC_AND_STACK": "../readme_manager/partials/documentation_and_stack.md",
     "TECHNOLOGY QNA": "../readme_manager/partials/technology_qna.md",
     "DEMO": "../readme_manager/partials/demo.md",
