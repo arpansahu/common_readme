@@ -1,3 +1,4 @@
+```bash
 version: '2.3'
 services:
   log:
@@ -274,3 +275,4 @@ services:
       - ./common/config/notary:/etc/notary:z
       - type: bind
         source: /data/secret/notary/notary-signer-ca
+```

@@ -68,9 +68,8 @@ Harbor is an open-source container image registry that secures images with role-
             vi docker-compose.yml
         ```
 
-        ```yml
-            [HARBOR DOCKER COMPOSE]
-        ```
+        [HARBOR DOCKER COMPOSE]
+
 
         As you can see the ports we used in harbor.yml are configured here and nginx service have been removed.
         ports:
