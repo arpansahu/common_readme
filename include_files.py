@@ -37,5 +37,4 @@ include_files = {
     "INSTALLATION": "../readme_manager/partials/installation.md",
     "DJANGO_COMMANDS": "../readme_manager/partials/django_commands.md",
     "NGINX_SERVER": "../readme_manager/partials/nginx_server.md",
-    "SERVICES": "../readme_manager/partials/",
 }
