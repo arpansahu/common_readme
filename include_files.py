@@ -20,7 +20,7 @@ include_files = {
     "STATIC_FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/Introduction/static_files_settings.md",
     "HARBOR" : "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/harbor/harbor.md",
     "HARBOR DOCKER COMPOSE": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/harbor/docker-compose.yml",
-    "INCLUDE FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/include_files.py",
+    "INCLUDE FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/include_files.py",
 
     # project files
     "env.example": "../env.example",
