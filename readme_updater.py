@@ -3,12 +3,8 @@ import os
 from include_files import include_files
 
 # Define the main base README file and the new README file
-base_readme_file = "baseREADME.md"
-new_readme_file = "newReadme.md"
-
-# Read the base README file content
-with open(base_readme_file, "r") as base_file:
-    readme_content = base_file.read()
+base_readme_file = os.path.join(os.path.dirname(__file__), "baseREADME.md")
+new_readme_file = os.path.join(os.path.dirname(__file__), "..", "Readme.md")
 
 # Function to fetch content from a URL or local file
 def fetch_content(file_url):
@@ -25,7 +21,7 @@ def fetch_content(file_url):
             with open(file_url, "r") as local_file:
                 return local_file.read()
         except FileNotFoundError as e:
-            print(f"Error reading {file_url}: {e}")
+            print(f"Error reading local file {file_url}: {e}")
             return ""
 
 # Function to recursively replace placeholders
@@ -43,11 +39,19 @@ def include_file_content(content, include_files):
     
     return content
 
-# Replace all placeholders with their corresponding file content from GitHub or local files
-readme_content = include_file_content(readme_content, include_files)
+# Check if the base README file exists
+if not os.path.exists(base_readme_file):
+    print(f"Error: The base README file '{base_readme_file}' does not exist.")
+else:
+    # Read the base README file content
+    with open(base_readme_file, "r") as base_file:
+        readme_content = base_file.read()
 
-# Write the updated content to the new README file
-with open(new_readme_file, "w") as new_file:
-    new_file.write(readme_content)
+    # Replace all placeholders with their corresponding file content from GitHub or local files
+    readme_content = include_file_content(readme_content, include_files)
 
-print("Readme.md has been created with the referenced content.")
+    # Write the updated content to the new README file
+    with open(new_readme_file, "w") as new_file:
+        new_file.write(readme_content)
+
+    print("Readme.md has been created with the referenced content.")
