@@ -75,3 +75,79 @@ Keep in mind that the instructions provided here assume a basic setup. For produ
     ```bash
     sudo systemctl reload nginx
     ```
+
+### Running Portainer Agent 
+
+1. Run this command to start the portainer agent docker container
+
+    ```bash
+        docker run -d -p 9995:9001 \
+        --name portainer_agent \
+        --restart=always \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+        portainer/agent:2.19.5
+    ```
+
+2. Configuring Nginx as Reverse proxy
+
+    1. Edit Nginx Configuration
+
+    ```bash
+    sudo vi /etc/nginx/sites-available/arpansahu
+    ```
+
+    2. Add this server configuration
+
+        ```bash
+        server {
+            listen         80;
+            server_name    portainer-agent.arpansahu.me;
+            # force https-redirects
+            if ($scheme = http) {
+                return 301 https://$server_name$request_uri;
+                }
+
+            location / {
+                proxy_pass              http://0.0.0.0:9995;
+                proxy_set_header        Host $host;
+                proxy_set_header    X-Forwarded-Proto $scheme;
+            }
+
+            listen 443 ssl; # managed by Certbot
+            ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
+            ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
+            include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+        }
+        ```
+
+    3. Test the Nginx Configuration
+
+        ```bash
+        sudo nginx -t
+        ```
+
+    4. Reload Nginx to apply the new configuration
+
+        ```bash
+        sudo systemctl reload nginx
+        ```
+3. Adding Environment
+
+    1. Go to environment ---> Choose Docker Standalone ----> Start Wizard
+
+    2. Will show you a command same as step 1. Run this command to start the portainer agent docker container, this is default command we have modified ports although
+
+        ```bash
+            docker run -d -p 9001:9001 \    
+            --name portainer_agent \
+            --restart=always \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+            portainer/agent:2.19.5
+        ```
+
+    3. Add Name, I have used docker-prod-env
+    4. Add Environment address domain:port combination is needed in my case portainer-agent.arpansahu.me: 9995
+    5. Click Connect
