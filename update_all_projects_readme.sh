@@ -66,15 +66,12 @@ update_readme() {
 
         # Check if README.md was created or updated
         if [ -f "README.md" ]; then
-            # Pull the latest changes from the remote repository
-            git pull --rebase
-
             # Stage the README.md file
             git add README.md
 
             # Print the difference detected
             echo "Checking differences for README.md"
-            git diff --cached README.md
+            git --no-pager diff --cached README.md
 
             # Check if there are any differences between the working directory and the index
             if git diff --cached --exit-code README.md; then
@@ -82,6 +79,7 @@ update_readme() {
             else
                 # Commit and push the changes
                 git commit -m "Automatic Update README.md"
+            
                 if git push "$AUTHENTICATED_URL"; then
                     echo "Successfully pushed changes for $repo_name"
                 else

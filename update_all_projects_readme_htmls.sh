@@ -95,25 +95,25 @@ update_readme() {
                 return
             fi
 
-            # COPY readme.html to this arpansahu.me repository (here our command line is still in the root directory of $repo_name)
-            echo "COPY readme_manager_html_detailed/readme.html to this arpansahu.me repository $repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
-            cp "readme_manager_html_detailed/readme.html" "$repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
+            # COPY README.md to this arpansahu.me repository (here our command line is still in the root directory of $repo_name)
+            echo "COPY readme_manager_html_detailed/README.md to this arpansahu.me repository $repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
+            cp "readme_manager_html_detailed/README.md" "$repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
             
             # Navigate to the repository directory
             cd "$repo_arpansahu_name" || { echo "Failed to navigate to repository directory: $repo_arpansahu_name"; return; }
 
             # Stage the README.md file
-            git add templates/modules/project_detailed/project_partials/great_chat/readme.html
+            git add templates/modules/project_detailed/project_partials/great_chat/README.md
 
-            echo "Checking differences for readme.html"
-            git --no-pager diff --cached templates/modules/project_detailed/project_partials/great_chat/readme.html
+            echo "Checking differences for README.md"
+            git --no-pager diff --cached templates/modules/project_detailed/project_partials/great_chat/README.md
 
             # Check if there are any differences between the working directory and the index
-            if git diff --cached --exit-code templates/modules/project_detailed/project_partials/great_chat/readme.html; then
-                echo "readme.html not changed for $repo_arpansahu_name"
+            if git diff --cached --exit-code templates/modules/project_detailed/project_partials/great_chat/README.md; then
+                echo "README.md not changed for $repo_arpansahu_name"
             else
                 # Commit and push the changes
-                git commit -m "Automatic Update readme.html for $repo_arpansahu_name"
+                git commit -m "Automatic Update README.md for $repo_arpansahu_name"
                 if git push "$AUTHENTICATED_ARPANSAHU_URL"; then
                     echo "Successfully pushed changes for $repo_arpansahu_name"
                 else
@@ -121,7 +121,7 @@ update_readme() {
                 fi
             fi
         else
-            echo "readme.html not found after running update script for $repo_name"
+            echo "README.md not found after running update script for $repo_name"
         fi
     else
         echo "Readme to Html script not found: $README_TO_HTML_SCRIPT_PATH"
