@@ -1,10 +1,4 @@
-# Great Chat
-
 [INTRODUCTION]
-
-[AWS DEPLOYMENT INTRODUCTION]
-
-[TECHNOLOGY QNA]
 
 ## Tech Stack
 
@@ -22,14 +16,6 @@
 ## Installation
 
 [INSTALLATION]
-
-
-[STATIC_FILES]
-
-
-## Custom Django Management Commands
-
-[DJANGO_COMMANDS]
 
 ## Readme Manager
 
