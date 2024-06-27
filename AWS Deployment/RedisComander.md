@@ -97,6 +97,10 @@ Redis Commander d'ont have native password protection enabled
     pm2 save
     ```
 
+    ```bash
+    pm2 startup
+    ```
+
 Now, redis-commander is running in the background managed by pm2. You can view its status, logs, and manage it using pm2 commands. For example:
 
 4. View the status:
@@ -121,14 +125,6 @@ Now, redis-commander is running in the background managed by pm2. You can view i
 
     ```bash
     pm2 logs redis-commander
-    ```
-
-5. Using nohup 
-
-    The nohup command is designed to ignore the hangup (HUP) signal, allowing a command to continue running even after the user who initiated the command logs out or the terminal is closed. The message “ignoring input and appending output to ‘nohup.out’” is a standard message indicating that the command’s output is being redirected to a file named nohup.out in the current directory.
-
-    ```bash
-    nohup redis-commander --redis-host 0.0.0.0 --redis-port 6379 --redis-password redisKesar302 --port 9996 > redis-commander.log 2>&1 &
     ```
 
 My Redis Commander can be accessed here : https://redis.arpansahu.me/
