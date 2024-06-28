@@ -69,13 +69,6 @@ After all these steps your Nginx configuration file located at /etc/nginx/sites-
 
 [README of Jenkins Setup]
 
-
-* Now Create a file named Jenkinsfile at the root of Git Repo and add following lines to file
-
-```bash
-[Jenkinsfile]
-```
-
 [JENKINS_END]
 
 [SERVICES]

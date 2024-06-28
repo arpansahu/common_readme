@@ -39,4 +39,7 @@ include_files = {
     "DJANGO_COMMANDS": "../readme_manager/partials/django_commands.md",
     "NGINX_SERVER": "../readme_manager/partials/nginx_server.md",
     "SERVICES": "../readme_manager/partials/services.md",
+    "JENKINS PROJECT NAME": "./readme_manager/partials/jenkins_project_name.md",
+    "JENKINS BUILD PROJECT NAME": "./readme_manager/partials/jenkins_build_project_name.md",
+    "STATIC PROJECT NAME": "./readme_manager/partials/static_project_name.md"
 }

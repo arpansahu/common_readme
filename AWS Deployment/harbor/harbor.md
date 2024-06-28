@@ -151,3 +151,17 @@ You can connect to my Docker Registry
 ```bash
     docker login harbor.arpansahu.me
 ```
+
+### Pushing Image to Harbor Docker Registry
+
+1. Tag Image
+
+```bash
+    docker tag image_name harbor.arpansahu.me/library/image_name:latest
+```
+
+2. Push Image
+
+```bash
+    docker push harbor.arpansahu.me/library/image_name:latest
+```

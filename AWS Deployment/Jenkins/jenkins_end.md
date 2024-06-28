@@ -2,11 +2,22 @@ Note: agent {label 'local'} is used to specify which node will execute the jenki
 
 * Configure a Jenkins project from jenkins ui located at https://jenkins.arpansahu.me
 
-Make sure to use Pipeline project and name it whatever you want I have named it as great_chat
+Make sure to use Pipeline project and name it whatever you want I have named it as per [JENKINS PROJECT NAME]
 
-![Jenkins Pipeline Configuration](/Jenkins.png)
+![Jenkins Pipeline Configuration](/Jenkins-deploy.png)
 
-In this above picture you can see credentials right? you can add your github credentials
+* Configure another Jenkins project from jenkins ui located at https://jenkins.arpansahu.me
+
+Make sure to use Pipeline project and name it whatever you want I have named it as {project_name}_build
+
+![Jenkins Build Pipeline Configuration](/Jenkins-build.png)
+
+This pipeline is triggered on another branch named as build. Whenever a new commit is pushed, it checks 
+if there are changes in the files other then few .md files and dependabot.yml file. If, changes are there it pushed the image.
+If image is pushed successfully, email is sent to notify and then another Jenkins Pipeline [JENKINS BUILD PROJECT NAME] is called.
+
+
+In this above picture you can see credentials right? you can add your github credentials and harbor
 from Manage Jenkins on home Page --> Manage Credentials
 
 and add your GitHub credentials from there
@@ -14,7 +25,7 @@ and add your GitHub credentials from there
 * Add a .env file to you project using following command (This step is no more required stage('Dependencies'))
 
     ```bash
-    sudo vi  /var/lib/jenkins/workspace/great_chat/.env
+    sudo vi  /var/lib/jenkins/workspace/[JENKINS PROJECT NAME]/.env
     ```
 
     Your workspace name may be different.

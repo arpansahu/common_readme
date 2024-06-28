@@ -20,16 +20,16 @@ if not DEBUG:
             'Access-Control-Allow-Origin': '*',
         }
         # s3 static settings
-        AWS_STATIC_LOCATION = 'portfolio/great_chat/static'
+        AWS_STATIC_LOCATION = 'portfolio/[STATIC PROJECT NAME]/static'
         STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_LOCATION}/'
-        STATICFILES_STORAGE = 'great_chat.storage_backends.StaticStorage'
+        STATICFILES_STORAGE = '[STATIC PROJECT NAME].storage_backends.StaticStorage'
         # s3 public media settings
-        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/great_chat/media'
+        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/media'
         MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_PUBLIC_MEDIA_LOCATION}/'
-        DEFAULT_FILE_STORAGE = 'great_chat.storage_backends.PublicMediaStorage'
+        DEFAULT_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PublicMediaStorage'
         # s3 private media settings
-        PRIVATE_MEDIA_LOCATION = 'portfolio/great_chat/private'
-        PRIVATE_FILE_STORAGE = 'great_chat.storage_backends.PrivateMediaStorage'
+        PRIVATE_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/private'
+        PRIVATE_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PrivateMediaStorage'
 
     elif BUCKET_TYPE == 'BLACKBLAZE':
 
@@ -52,16 +52,16 @@ if not DEBUG:
             'Access-Control-Allow-Origin': '*',
         }
         # s3 static settings
-        AWS_STATIC_LOCATION = 'portfolio/great_chat/static'
+        AWS_STATIC_LOCATION = 'portfolio/[STATIC PROJECT NAME]/static'
         STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.{AWS_STATIC_LOCATION}/'
-        STATICFILES_STORAGE = 'great_chat.storage_backends.StaticStorage'
+        STATICFILES_STORAGE = '[STATIC PROJECT NAME].storage_backends.StaticStorage'
         # s3 public media settings
-        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/great_chat/media'
+        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/media'
         MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.{AWS_PUBLIC_MEDIA_LOCATION}/'
-        DEFAULT_FILE_STORAGE = 'great_chat.storage_backends.PublicMediaStorage'
+        DEFAULT_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PublicMediaStorage'
         # s3 private media settings
-        PRIVATE_MEDIA_LOCATION = 'portfolio/great_chat/private'
-        PRIVATE_FILE_STORAGE = 'great_chat.storage_backends.PrivateMediaStorage'
+        PRIVATE_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/private'
+        PRIVATE_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PrivateMediaStorage'
 
     elif BUCKET_TYPE == 'MINIO':
         AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
@@ -80,18 +80,18 @@ if not DEBUG:
         }
 
         # s3 static settings
-        AWS_STATIC_LOCATION = 'portfolio/great_chat/static'
+        AWS_STATIC_LOCATION = 'portfolio/[STATIC PROJECT NAME]/static'
         STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_STATIC_LOCATION}/'
-        STATICFILES_STORAGE = 'great_chat.storage_backends.StaticStorage'
+        STATICFILES_STORAGE = '[STATIC PROJECT NAME].storage_backends.StaticStorage'
 
         # s3 public media settings
-        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/great_chat/media'
+        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/media'
         MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_PUBLIC_MEDIA_LOCATION}/'
-        DEFAULT_FILE_STORAGE = 'great_chat.storage_backends.PublicMediaStorage'
+        DEFAULT_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PublicMediaStorage'
 
         # s3 private media settings
-        PRIVATE_MEDIA_LOCATION = 'portfolio/great_chat/private'
-        PRIVATE_FILE_STORAGE = 'great_chat.storage_backends.PrivateMediaStorage'
+        PRIVATE_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/private'
+        PRIVATE_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PrivateMediaStorage'
 
     
 

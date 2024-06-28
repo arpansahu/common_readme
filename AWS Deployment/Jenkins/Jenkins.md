@@ -101,5 +101,16 @@ stage('Dependencies') {
         }
 ```
 
-in Jenkinsfile
+in Jenkinsfile-build to copy .env file into build directory
 
+* Now Create a file named Jenkinsfile-build at the root of Git Repo and add following lines to file
+
+```bash
+[Jenkinsfile-build]
+```
+
+* Now Create a file named Jenkinsfile-deploy at the root of Git Repo and add following lines to file
+
+```bash
+[Jenkinsfile-deploy]
+```
