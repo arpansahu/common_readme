@@ -54,7 +54,20 @@ Reference: https://docs.docker.com/engine/install/ubuntu/
         sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
         ```
 
-   3. Verify that the Docker Engine installation is successful by running the hello-world image:
+
+   3. Start Docker Engine
+
+        ```bash
+        sudo systemctl start docker
+        ```
+
+    4. Enable Docker Engine
+
+        ```bash
+        sudo systemctl enable docker
+        ```
+   
+    5. Verify that the Docker Engine installation is successful by running the hello-world image:
 
         ```bash
          sudo docker run hello-world

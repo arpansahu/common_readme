@@ -17,7 +17,7 @@ if there are changes in the files other then few .md files and dependabot.yml fi
 If image is pushed successfully, email is sent to notify and then another Jenkins Pipeline [JENKINS BUILD PROJECT NAME] is called.
 
 
-In this above picture you can see credentials right? you can add your github credentials and harbor
+In this above picture you can see credentials right? you can add your github credentials and harbor credentials use harbor-credentials as id for harbor credentials.
 from Manage Jenkins on home Page --> Manage Credentials
 
 and add your GitHub credentials from there

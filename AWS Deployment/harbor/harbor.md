@@ -16,7 +16,7 @@ Harbor is an open-source container image registry that secures images with role-
 2. **Extract the tarball:**
 
     ```bash
-    tar -zxvf harbor-offline-installer-<version>.tgz
+    tar -zxvf harbor-offline-installer-v2.4.2.tgz
     cd harbor
     ```
 
@@ -63,6 +63,32 @@ Harbor is an open-source container image registry that secures images with role-
 
 
     3. Edit docker-compose.yml
+
+        Here docker-compose.yml file only be available after running the below install command
+
+        ```bash
+            sudo ./install.sh --with-notary --with-trivy --with-chartmuseum
+        ```
+
+        Note: If docker compose is not available you need to install it
+
+            1. Installing docker compose
+                ```bash
+                    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                ```
+            2. Next, set the correct permissions so that the docker-compose command is executable:
+
+                ```bash
+                    sudo chmod +x /usr/local/bin/docker-compose
+                ```
+            
+            3. To verify that the installation was successful, you can run:
+
+                ```bash
+                    docker-compose --version
+                ```
+
+        It might get success then you can see this file
 
         ```bash
             vi docker-compose.yml
