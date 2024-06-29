@@ -26,12 +26,6 @@
    ```bash
    pgadmin4
    ```
-
-    To ensure pgAdmin runs in the background, use `nohup`:
-
-    ```bash
-    nohup pgadmin4 &>/dev/null &
-    ```
     
 By using a virtual environment, you avoid potential conflicts with system packages, and you can manage dependencies for pgAdmin 4 more effectively.
 
@@ -41,6 +35,54 @@ Remember to activate your virtual environment whenever you want to run pgAdmin 4
 source pgadmin_venv/bin/activate
 pgadmin4
 ```
+
+### Manage PgAdmin using Pm2
+
+1. Create a Startup Script for pgAdmin 4
+
+    ```bash
+        touch /root/run_pgadmin.sh 
+    ```
+
+2. Edit this script and add following 
+
+    ```bash
+        vi /root/run_pgadmin.sh 
+    ```
+    ```bash
+        source pgadmin_venv/bin/activate
+        pgadmin4
+    ```
+
+3. Making Script Executable
+
+    ```bash
+        chmod +x /root/run_pgadmin.sh
+    ```
+
+4. Installing pm2
+
+    ```bash
+        npm install pm2 -g
+    ```
+
+5. Start pgAdmin 4 with PM2
+
+    ```bash
+        pm2 start /root/run_pgadmin.sh --name pgadmin4
+    ```
+
+6. Save PM2 configuration
+
+    ```bash
+        pm2 save
+    ```
+
+7. Set PM2 to Start on Boot
+
+    ```bash
+        pm2 startup
+    ```
 
 And deactivate it when you're done:
 
