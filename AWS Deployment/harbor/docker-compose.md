@@ -250,8 +250,8 @@
             - harbor
             - harbor-notary
             ports:
-            - 8081:8080
-            - 8443:8443
+            - 8601:8080
+            - 8602:8443
             - 4443:4443
             depends_on:
             - registry

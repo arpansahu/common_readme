@@ -1,0 +1,319 @@
+## Installing Kubernetes cluster and Setting A Dashboard
+
+### Install Kind and Kubernetes CLI (kubectl)
+
+1.	Install Kind:
+
+    ```bash
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-amd64
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin/kind
+    ```
+
+2. Install kubectl:
+
+    ```bash
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+    ```
+
+### Create a Kind Cluster with Port Mappings
+
+1. 	Create a configuration file for Kind:
+
+    ```bash
+        touch kind-config.yaml
+        vi kind-config.yaml
+    ```
+
+    paste the below code into the file
+
+    ```yaml
+        [KIND CONFIG MD]
+    ```
+
+2. Create the Kind cluster:
+
+    ```bash
+        kind create cluster --config kind-config.yaml
+    ```
+
+###  Label the Node
+
+1. Label the node to match the required node selectors:
+
+    ```bash
+        kubectl label node kind-control-plane ingress-ready=true
+        kubectl label node kind-control-plane kubernetes.io/os=linux
+    ```
+
+### Deploy the Kubernetes Dashboard
+
+1. Create the kubernetes-dashboard namespace:
+
+    ```bash
+        kubectl create namespace kubernetes-dashboard
+    ```
+
+2. Deploy the Kubernetes Dashboard:
+
+    ```bash
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+    ```
+
+3. Create an admin user:
+
+    Create a file named dashboard-adminuser.yaml
+
+    ```bash
+        touch dashboard-adminuser.yaml
+        vi dashboard-adminuser.yaml
+    ```
+
+    copy and paste below content into it
+
+    ```yaml
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+            name: admin-user
+            namespace: kubernetes-dashboard
+    ```
+
+4. Create ClusterRoleBinding:
+
+    Create a file named dashboard-adminuser-rolebinding.yaml
+
+    ```bash
+        touch dashboard-adminuser-rolebinding.yaml
+        vi dashboard-adminuser-rolebinding.yaml
+    ```
+
+    copy and paste below content into it
+
+    ```yaml
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+            name: admin-user
+        roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: cluster-admin
+        subjects:
+        - kind: ServiceAccount
+            name: admin-user
+            namespace: kubernetes-dashboard
+    ```
+
+5. Get the admin user token:
+
+    ```bash
+        kubectl -n kubernetes-dashboard create token admin-user
+    ```
+
+### Expose the Kubernetes Dashboard Service using NodePort
+
+1. Edit the Kubernetes Dashboard service:
+
+    ```bash
+        kubectl -n kubernetes-dashboard edit service kubernetes-dashboard
+    ```
+
+2. Modify the service to use NodePort:
+
+    ```yaml
+        apiVersion: v1
+        kind: Service
+        metadata:
+        annotations:
+            kubectl.kubernetes.io/last-applied-configuration: |
+            {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"k8s-app":"kubernetes-dashboard"},"name":"kubernetes-dashboard","namespace":"kubernetes-dashboard"},"spec":{"ports":[{"port":443,"targetPort":8443}],"selector":{"k8s-app":"kubernetes-dashboard"}}}
+        creationTimestamp: "2024-07-06T11:14:04Z"
+        labels:
+            k8s-app: kubernetes-dashboard
+        name: kubernetes-dashboard
+        namespace: kubernetes-dashboard
+        resourceVersion: "1668"
+        uid: e4211a82-97a1-4a65-b52e-be3bcb3b5150
+        spec:
+        clusterIP: 10.96.128.226
+        clusterIPs:
+        - 10.96.128.226
+        externalTrafficPolicy: Cluster
+        internalTrafficPolicy: Cluster
+        ipFamilies:
+        - IPv4
+        ipFamilyPolicy: SingleStack
+        ports:
+        - nodePort: 31000
+            port: 443
+            protocol: TCP
+            targetPort: 8443
+        selector:
+            k8s-app: kubernetes-dashboard
+        sessionAffinity: None
+        type: NodePort
+        status:
+        loadBalancer: {}
+    ```
+
+
+### Configure On-Premises Nginx as a Reverse Proxy
+
+1. Edit Nginx Configuration
+
+    ```bash
+    sudo vi /etc/nginx/sites-available/arpansahu
+    ```
+
+2. To know Internal ip of kind cluster
+
+    ```bash
+        kubectl get nodes -o wide
+    ```
+
+3. Add this server configuration
+
+    ```bash
+    server {
+        listen         80;
+        server_name    kube.arpansahu.me;
+        # force https-redirects
+        if ($scheme = http) {
+            return 301 https://$server_name$request_uri;
+            }
+
+        location / {
+            proxy_pass              proxy_pass https://<INTERNAL-IP>:31000;
+            proxy_set_header        Host $host;
+            proxy_set_header    X-Forwarded-Proto $scheme;
+        }
+
+        listen 443 ssl; # managed by Certbot
+        ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
+        ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
+        include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    }
+    ```
+
+
+4. Test the Nginx Configuration
+
+    ```bash
+    sudo nginx -t
+    ```
+
+5. Reload Nginx to apply the new configuration
+
+    ```bash
+    sudo systemctl reload nginx
+    ```
+
+### Get the admin user token for login:
+
+    ```bash
+        kubectl -n kubernetes-dashboard create token admin-user
+    ```
+
+    Note: The token generated by this command will have expiry and you may need to generate token again and again
+
+### Generate token without expiry
+
+1.	Delete the old ServiceAccount and ClusterRoleBinding:
+
+    ```bash
+        kubectl -n kubernetes-dashboard delete serviceaccount admin-user
+        kubectl delete clusterrolebinding admin-user
+    ```
+
+2. Create and apply the ServiceAccount:
+
+    ```bash
+        touch dashboard-admin-sa.yaml
+        vi dashboard-admin-sa.yaml
+    ```
+
+    copy this and past it in the file
+
+    ```yaml
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+        name: dashboard-admin-sa
+        namespace: kubernetes-dashboard
+    ```
+
+3. Create and apply the ClusterRoleBinding:
+
+    ```bash
+        touch dashboard-admin-sa-binding.yaml
+        vi dashboard-admin-sa-binding.yaml
+    ```
+
+    copy this and past it in the file
+
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+        name: dashboard-admin-sa-binding
+    roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+    subjects:
+    - kind: ServiceAccount
+        name: dashboard-admin-sa
+        namespace: kubernetes-dashboard
+    ``` 
+
+4. Create the secret for the ServiceAccount:
+
+    ```bash
+        touch dashboard-admin-sa-binding.yaml
+        vi dashboard-admin-sa-binding.yaml
+    ```
+
+    copy this and past it in the file
+
+    ```yaml
+    apiVersion: v1
+    kind: Secret
+    metadata:
+    name: dashboard-admin-sa-token
+    namespace: kubernetes-dashboard
+    annotations:
+        kubernetes.io/service-account.name: dashboard-admin-sa
+    type: kubernetes.io/service-account-token
+    ``` 
+
+
+5. Apply all the files
+
+    ```bash
+        kubectl apply -f dashboard-admin-sa.yaml
+        kubectl apply -f dashboard-admin-sa-binding.yaml
+        kubectl apply -f dashboard-admin-sa-secret.yaml
+    ```
+
+6. Check the Secret
+
+    ```bash
+        kubectl -n kubernetes-dashboard get secret dashboard-admin-sa-token
+    ```
+
+7. Patch the ServiceAccount:
+
+    ```bash
+        kubectl -n kubernetes-dashboard patch serviceaccount dashboard-admin-sa -p '{"secrets":[{"name":"dashboard-admin-sa-token"}]}'
+    ```
+
+8. Retrieve the token:
+
+    ```bash
+        SECRET_NAME=$(kubectl -n kubernetes-dashboard get sa dashboard-admin-sa -o jsonpath="{.secrets[0].name}")
+        kubectl -n kubernetes-dashboard get secret $SECRET_NAME -o jsonpath="{.data.token}" | base64 --decode
+    ```

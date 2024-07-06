@@ -42,11 +42,11 @@ Harbor is an open-source container image registry that secures images with role-
         # http related config
         http:
         # port for http, default is 80. If https enabled, this port will redirect to https port
-        port: 8081
+        port: 8601
         # https related config
         https:
         # https port for harbor, default is 443
-        port: 8443
+        port: 8602
         # The path of cert and key files for nginx
         certificate: /etc/letsencrypt/live/arpansahu.me/fullchain.pem 
         private_key: /etc/letsencrypt/live/arpansahu.me/privkey.pem
@@ -101,8 +101,8 @@ Harbor is an open-source container image registry that secures images with role-
 
         As you can see the ports we used in harbor.yml are configured here and nginx service have been removed.
         ports:
-          - 8081:8080
-          - 8443:8443
+          - 8601:8080
+          - 8602:8443
           - 4443:4443
 
 4. **Run the Harbor install script:**

@@ -49,13 +49,17 @@ Create a file named docker-compose.yml and add following lines in it
 
 [DOCKER_END]
 
-### Step 3: Serving the requests from Nginx
+### Step 3.1: Installing Kubernetes cluster and Setting A Dashboard
+
+
+
+### Step 4: Serving the requests from Nginx
 
 [README of Nginx Setup]
 
 Now it's time to enable HTTPS for this server
 
-### Step 4: Enabling HTTPS 
+### Step 5: Enabling HTTPS 
 
 [README of Nginx HTTPS Setup]
 
@@ -65,7 +69,7 @@ After all these steps your Nginx configuration file located at /etc/nginx/sites-
 [NGINX_SERVER]
 ```
 
-### Step 5: CI/CD using Jenkins
+### Step 6: CI/CD using Jenkins
 
 [README of Jenkins Setup]
 
