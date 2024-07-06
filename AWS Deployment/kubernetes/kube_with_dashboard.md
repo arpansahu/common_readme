@@ -30,7 +30,6 @@
     paste the below code into the file
 
     ```yaml
-
         [KIND CONFIG MD]
     ```
 
