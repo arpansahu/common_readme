@@ -73,7 +73,7 @@
 
     copy and paste below content into it
 
-    ```yaml
+    ```bash
         [DASHBOARD ADMIN USER MD]
     ```
 
@@ -88,7 +88,7 @@
 
     copy and paste below content into it
 
-    ```yaml
+    ```bash
         [DASHBOARD ADMIN USER ROLE BIND MD]
     ```
 
@@ -108,7 +108,7 @@
 
 2. Modify the service to use NodePort:
 
-    ```yaml
+    ```bash
         [DASHBOARD SERVICE]
     ```
 
@@ -195,7 +195,7 @@
 
     copy this and past it in the file
 
-    ```yaml
+    ```bash
         [DASHBOARD ADMIN SA MD]
     ```
 
@@ -208,7 +208,7 @@
 
     copy this and past it in the file
 
-    ```yaml
+    ```bash
         [DASHBOARD ADMIN SA BINDING]
     ``` 
 
@@ -221,7 +221,7 @@
 
     copy this and past it in the file
 
-    ```yaml
+    ```bash
         [DASHBOARD ADMIN SA SECRET]
     ``` 
 
