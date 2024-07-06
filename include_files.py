@@ -31,7 +31,7 @@ include_files = {
     "DASHBOARD ADMIN SA MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa.md",
     "DASHBOARD ADMIN SA BINDING": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-binding.md",
     "DASHBOARD ADMIN SA SECRET": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-secret.md",
-    "KUBE WITH DASHBOARD" : "", 
+    "KUBE WITH DASHBOARD" : "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/kube_with_dashboard.md", 
     # project files
     "env.example": "../env.example",
     "docker-compose.yml": "../docker-compose.yml",
