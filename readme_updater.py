@@ -38,21 +38,12 @@ def include_file_content(content, include_files):
         placeholders_found = False
         for placeholder, file_url in include_files.items():
             placeholder_tag = f"[{placeholder}]"
-            pattern = re.compile(r'(\s*)```(\w+)\s*$begin:math:display$' + re.escape(placeholder) + r'$end:math:display$\s*```')
-            match = pattern.search(content)
-            if match:
+            if placeholder_tag in content:
                 placeholders_found = True
-                leading_spaces = match.group(1)
-                language = match.group(2)
-                print(f"Found placeholder: {placeholder_tag} with leading spaces '{leading_spaces}' and language '{language}'")
+                print(f"Found placeholder: {placeholder_tag}")
                 try:
                     included_content = fetch_content(file_url)
-                    included_content_lines = included_content.splitlines()
-                    # Adjust indentation based on leading spaces
-                    indented_content = "\n".join([leading_spaces + line for line in included_content_lines])
-                    replacement = f"{leading_spaces}```{language}\n{indented_content}\n{leading_spaces}```"
-                    print(f"Replacing:\n{match.group(0)}\nwith:\n{replacement}\n")
-                    content = content.replace(match.group(0), replacement, 1)
+                    content = content.replace(placeholder_tag, included_content)
                 except FileNotFoundError as e:
                     print(f"Stopping process due to missing file: {e}")
                     return None
