@@ -29,9 +29,9 @@
 
     paste the below code into the file
 
-    ```yaml
-        [KIND CONFIG MD]
-    ```
+```yaml
+    [KIND CONFIG MD]
+```
 
 2. Create the Kind cluster:
 
