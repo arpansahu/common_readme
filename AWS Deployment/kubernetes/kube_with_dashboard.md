@@ -74,11 +74,7 @@
     copy and paste below content into it
 
     ```yaml
-        apiVersion: v1
-        kind: ServiceAccount
-        metadata:
-            name: admin-user
-            namespace: kubernetes-dashboard
+        [DASHBOARD ADMIN USER MD]
     ```
 
 4. Create ClusterRoleBinding:
@@ -93,18 +89,7 @@
     copy and paste below content into it
 
     ```yaml
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: ClusterRoleBinding
-        metadata:
-            name: admin-user
-        roleRef:
-            apiGroup: rbac.authorization.k8s.io
-            kind: ClusterRole
-            name: cluster-admin
-        subjects:
-        - kind: ServiceAccount
-            name: admin-user
-            namespace: kubernetes-dashboard
+        [DASHBOARD ADMIN USER ROLE BIND MD]
     ```
 
 5. Get the admin user token:
@@ -124,39 +109,7 @@
 2. Modify the service to use NodePort:
 
     ```yaml
-        apiVersion: v1
-        kind: Service
-        metadata:
-        annotations:
-            kubectl.kubernetes.io/last-applied-configuration: |
-            {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"k8s-app":"kubernetes-dashboard"},"name":"kubernetes-dashboard","namespace":"kubernetes-dashboard"},"spec":{"ports":[{"port":443,"targetPort":8443}],"selector":{"k8s-app":"kubernetes-dashboard"}}}
-        creationTimestamp: "2024-07-06T11:14:04Z"
-        labels:
-            k8s-app: kubernetes-dashboard
-        name: kubernetes-dashboard
-        namespace: kubernetes-dashboard
-        resourceVersion: "1668"
-        uid: e4211a82-97a1-4a65-b52e-be3bcb3b5150
-        spec:
-        clusterIP: 10.96.128.226
-        clusterIPs:
-        - 10.96.128.226
-        externalTrafficPolicy: Cluster
-        internalTrafficPolicy: Cluster
-        ipFamilies:
-        - IPv4
-        ipFamilyPolicy: SingleStack
-        ports:
-        - nodePort: 31000
-            port: 443
-            protocol: TCP
-            targetPort: 8443
-        selector:
-            k8s-app: kubernetes-dashboard
-        sessionAffinity: None
-        type: NodePort
-        status:
-        loadBalancer: {}
+        [DASHBOARD SERVICE]
     ```
 
 
@@ -214,6 +167,10 @@
 
 ### Get the admin user token for login:
 
+    Access:  https://kube.arpansahu.me
+
+    then generate token from host server by running the following command
+
     ```bash
         kubectl -n kubernetes-dashboard create token admin-user
     ```
@@ -239,11 +196,7 @@
     copy this and past it in the file
 
     ```yaml
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-        name: dashboard-admin-sa
-        namespace: kubernetes-dashboard
+        [DASHBOARD ADMIN SA MD]
     ```
 
 3. Create and apply the ClusterRoleBinding:
@@ -256,38 +209,20 @@
     copy this and past it in the file
 
     ```yaml
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: ClusterRoleBinding
-    metadata:
-        name: dashboard-admin-sa-binding
-    roleRef:
-        apiGroup: rbac.authorization.k8s.io
-        kind: ClusterRole
-        name: cluster-admin
-    subjects:
-    - kind: ServiceAccount
-        name: dashboard-admin-sa
-        namespace: kubernetes-dashboard
+        [DASHBOARD ADMIN SA BINDING]
     ``` 
 
 4. Create the secret for the ServiceAccount:
 
     ```bash
-        touch dashboard-admin-sa-binding.yaml
-        vi dashboard-admin-sa-binding.yaml
+        touch dashboard-admin-sa-secret.yaml
+        vi dashboard-admin-sa-secret.yaml
     ```
 
     copy this and past it in the file
 
     ```yaml
-    apiVersion: v1
-    kind: Secret
-    metadata:
-    name: dashboard-admin-sa-token
-    namespace: kubernetes-dashboard
-    annotations:
-        kubernetes.io/service-account.name: dashboard-admin-sa
-    type: kubernetes.io/service-account-token
+        [DASHBOARD ADMIN SA SECRET]
     ``` 
 
 
@@ -317,3 +252,17 @@
         SECRET_NAME=$(kubectl -n kubernetes-dashboard get sa dashboard-admin-sa -o jsonpath="{.secrets[0].name}")
         kubectl -n kubernetes-dashboard get secret $SECRET_NAME -o jsonpath="{.data.token}" | base64 --decode
     ```
+
+### Accessing 
+
+Access the Dashboard
+
+https://kube.arpansahu.me
+
+you will be required to fill token for login
+
+Access the cluster via Cli using kubectl
+
+```bash
+    kubectl get nodes
+```

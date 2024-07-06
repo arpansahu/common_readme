@@ -49,8 +49,9 @@ Create a file named docker-compose.yml and add following lines in it
 
 [DOCKER_END]
 
-### Step 3.1: Installing Kubernetes cluster and Setting A Dashboard
+### Step 3: Containerizing with Kubernetes
 
+[KUBE WITH DASHBOARD]
 
 
 ### Step 4: Serving the requests from Nginx
