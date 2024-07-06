@@ -1,5 +1,6 @@
 import requests
 import os
+import re
 from include_files import include_files
 
 # Define the main base README file and the new README file
@@ -37,18 +38,33 @@ def include_file_content(content, include_files):
         placeholders_found = False
         for placeholder, file_url in include_files.items():
             placeholder_tag = f"[{placeholder}]"
-            if placeholder_tag in content:
+            pattern = re.compile(r'(\s*)```(\w+)\s*$begin:math:display$' + re.escape(placeholder) + r'$end:math:display$\s*```')
+            match = pattern.search(content)
+            if match:
                 placeholders_found = True
-                print(f"Found placeholder: {placeholder_tag}")
+                leading_spaces = match.group(1)
+                language = match.group(2)
+                print(f"Found placeholder: {placeholder_tag} with leading spaces '{leading_spaces}' and language '{language}'")
                 try:
                     included_content = fetch_content(file_url)
-                    content = content.replace(placeholder_tag, included_content)
+                    included_content_lines = included_content.splitlines()
+                    # Adjust indentation based on leading spaces
+                    indented_content = "\n".join([leading_spaces + line for line in included_content_lines])
+                    replacement = f"{leading_spaces}```{language}\n{indented_content}\n{leading_spaces}```"
+                    print(f"Replacing:\n{match.group(0)}\nwith:\n{replacement}\n")
+                    content = content.replace(match.group(0), replacement, 1)
                 except FileNotFoundError as e:
                     print(f"Stopping process due to missing file: {e}")
                     return None
         iteration += 1
     
     return content
+
+# Function to remove lines containing '# Ignore this line'
+def remove_ignore_lines(content):
+    lines = content.split('\n')
+    filtered_lines = [line for line in lines if '# Ignore this line' not in line]
+    return '\n'.join(filtered_lines)
 
 # Check if the base README file exists
 if not os.path.exists(base_readme_file):
@@ -62,6 +78,9 @@ else:
     readme_content = include_file_content(readme_content, include_files)
 
     if readme_content is not None:
+        # Remove lines containing '# Ignore this line'
+        readme_content = remove_ignore_lines(readme_content)
+
         # Write the updated content to the new README file
         with open(new_readme_file, "w") as new_file:
             new_file.write(readme_content)
