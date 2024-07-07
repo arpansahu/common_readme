@@ -73,7 +73,7 @@
 
     copy and paste below content into it
 
-    ```bash
+    ```yaml
         [DASHBOARD ADMIN USER MD]
     ```
 
@@ -88,7 +88,7 @@
 
     copy and paste below content into it
 
-    ```bash
+    ```yaml
         [DASHBOARD ADMIN USER ROLE BIND MD]
     ```
 
@@ -108,7 +108,7 @@
 
 2. Modify the service to use NodePort:
 
-    ```bash
+    ```yaml
         [DASHBOARD SERVICE]
     ```
 
@@ -155,7 +155,7 @@
 
 4. Test the Nginx Configuration
 
-    ```bash
+    ```bas
     sudo nginx -t
     ```
 
@@ -195,7 +195,7 @@
 
     copy this and past it in the file
 
-    ```bash
+    ```yaml
         [DASHBOARD ADMIN SA MD]
     ```
 
@@ -208,7 +208,7 @@
 
     copy this and past it in the file
 
-    ```bash
+    ```yaml
         [DASHBOARD ADMIN SA BINDING]
     ``` 
 
@@ -221,7 +221,7 @@
 
     copy this and past it in the file
 
-    ```bash
+    ```yaml
         [DASHBOARD ADMIN SA SECRET]
     ``` 
 
