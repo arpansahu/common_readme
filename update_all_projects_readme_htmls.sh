@@ -96,24 +96,24 @@ update_readme() {
             fi
 
             # COPY readme.html to this arpansahu.me repository (here our command line is still in the root directory of $repo_name)
-            echo "COPY rreadme_manager_html_detailed/readme.html to this arpansahu.me repository $repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
-            cp "readme_manager_html_detailed/readme.html" "$repo_arpansahu_name/templates/modules/project_detailed/project_partials/great_chat/"
+            echo "COPY readme_manager_html_detailed/readme.html to this arpansahu.me repository $repo_arpansahu_name/templates/modules/project_detailed/project_partials/$repo_name/"
+            cp "readme_manager_html_detailed/readme.html" "$repo_arpansahu_name/templates/modules/project_detailed/project_partials/$repo_name/"
             
             # Navigate to the repository directory
             cd "$repo_arpansahu_name" || { echo "Failed to navigate to repository directory: $repo_arpansahu_name"; return; }
 
             # Stage the readme.html file
-            git add templates/modules/project_detailed/project_partials/great_chat/readme.html
+            git add templates/modules/project_detailed/project_partials/$repo_name/readme.html
 
             echo "Checking differences for readme.html"
-            git --no-pager diff --cached templates/modules/project_detailed/project_partials/great_chat/readme.html
+            git --no-pager diff --cached templates/modules/project_detailed/project_partials/$repo_name/readme.html
 
             # Check if there are any differences between the working directory and the index
-            if git diff --cached --exit-code templates/modules/project_detailed/project_partials/great_chat/readme.htmld; then
+            if git diff --cached --exit-code templates/modules/project_detailed/project_partials/$repo_name/readme.htmld; then
                 echo "readme.html not changed for $repo_arpansahu_name"
             else
                 # Commit and push the changes
-                git commit -m "Automatic Update readme.html for $repo_arpansahu_name"
+                git commit -m "Automatic Update readme.html for $repo_name"
                 if git push "$AUTHENTICATED_ARPANSAHU_URL"; then
                     echo "Successfully pushed changes for $repo_arpansahu_name"
                 else
