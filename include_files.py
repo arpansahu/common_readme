@@ -22,6 +22,7 @@ include_files = {
     "README of Harbor" : "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/harbor/harbor.md",
     "HARBOR DOCKER COMPOSE": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/harbor/docker-compose.md",
     "INCLUDE FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/include_files.py",
+    "MONITORING": "https://raw.githubusercontent.com/arpansahu/arpansahu-one-scripts/main/README.md?token=GHSAT0AAAAAACTHOPGXTRCHN6GJQNHQ43QKZUKVMPA",
 
     #kubernetes
     "KIND CONFIG MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/kind-config.md",
@@ -32,12 +33,17 @@ include_files = {
     "DASHBOARD ADMIN SA BINDING": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-binding.md",
     "DASHBOARD ADMIN SA SECRET": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-secret.md",
     "KUBE WITH DASHBOARD" : "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/kube_with_dashboard.md", 
+    "KUBE DEPLOYMENT": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/deployment.md",
+
     # project files
     "env.example": "../env.example",
     "docker-compose.yml": "../docker-compose.yml",
     "Dockerfile": "../Dockerfile",
     "Jenkinsfile-deploy": "../Jenkinsfile-deploy",
     "Jenkinsfile-build": "../Jenkinsfile-build",
+    "DEPLOYMENT YAML": "../deployment.yaml",
+    "SERVICE YAML": "../service.yaml",
+    
     
     # project partials files
     "INTRODUCTION": "../readme_manager/partials/introduction.md",

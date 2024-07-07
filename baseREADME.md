@@ -52,7 +52,7 @@ Create a file named docker-compose.yml and add following lines in it
 ### Step 3: Containerizing with Kubernetes
 
 [KUBE WITH DASHBOARD]
-
+[KUBE DEPLOYMENT]
 
 ### Step 4: Serving the requests from Nginx
 
@@ -77,6 +77,8 @@ After all these steps your Nginx configuration file located at /etc/nginx/sites-
 [JENKINS_END]
 
 [SERVICES]
+
+[MONITORING]
 
 ## Documentation
 
