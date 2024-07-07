@@ -29,7 +29,7 @@
 
     paste the below code into the file
 
-    ```bash
+    ```yaml
         [KIND CONFIG MD]
     ```
 
