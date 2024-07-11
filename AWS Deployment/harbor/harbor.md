@@ -191,3 +191,25 @@ You can connect to my Docker Registry
 ```bash
     docker push harbor.arpansahu.me/library/image_name:latest
 ```
+
+### Create Image Retention Policy
+
+Inside project, default project is library 
+ 
+Go to >>> Library project
+Go to >>> Policy
+Click on >>> Add Policy
+
+For the repositories == matching **
+By artifact count or number of days == retain the most recently pulled # artifacts  Count = 2/3 no of last no of images 
+tags == matching      Untagged artifacts = ticketed
+
+This is one time task for entire project 
+
+Same as below
+
+![Add Retention Rule](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/harbor/retention_rule_add.png)
+
+After adding rule schedule it as per requirement as below
+
+![Add Retention Rule S](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/harbor/retention_rule_schedule.png)

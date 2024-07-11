@@ -91,8 +91,14 @@
     ```yaml
         [DASHBOARD ADMIN USER ROLE BIND MD]
     ```
+5. Apply both the files
 
-5. Get the admin user token:
+    ```bash
+        kubectl apply -f dashboard-adminuser.yaml
+        kubectl apply -f dashboard-adminuser-rolebinding.yaml
+    ```
+
+6. Get the admin user token:
 
     ```bash
         kubectl -n kubernetes-dashboard create token admin-user
@@ -106,7 +112,7 @@
         kubectl -n kubernetes-dashboard edit service kubernetes-dashboard
     ```
 
-2. Modify the service to use NodePort:
+2. Modify the service to use NodePort (do not copy blindly just make the mentioned changes):
 
     ```yaml
         [DASHBOARD SERVICE]

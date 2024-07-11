@@ -19,19 +19,19 @@ spec:
   clusterIP: 10.96.128.226
   clusterIPs:
   - 10.96.128.226
-  externalTrafficPolicy: Cluster
+  externalTrafficPolicy: Cluster # add this line
   internalTrafficPolicy: Cluster
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
   ports:
-  - nodePort: 31000
+  - nodePort: 31000 # add this line
     port: 443
     protocol: TCP
     targetPort: 8443
   selector:
     k8s-app: kubernetes-dashboard
   sessionAffinity: None
-  type: NodePort
+  type: NodePort # change this port type
 status:
   loadBalancer: {}
