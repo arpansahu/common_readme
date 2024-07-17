@@ -101,6 +101,99 @@ stage('Dependencies') {
         }
 ```
 
+* Also we Need to modify the Nginx Configuration File
+
+1. Create a new configuration file: Create a new file in the Nginx configuration directory. The location of this directory varies depending on your  operating system and Nginx installation, but it’s usually found at /etc/nginx/sites-available/.
+
+  ```bash
+    touch /etc/nginx/sites-available/great-chat
+    vi /etc/nginx/sites-available/great-chat
+  ```
+
+2.	Add the server block configuration: Copy and paste your server block configuration into this new file.
+
+  We can have two configurations, one for docker and one for kubernetes deployment, out jenkins deployment file will handle it accordingly.
+
+  1. Nginx for Docker Deployment 
+
+    ```bash
+        server {
+            listen 80;
+            server_name [PROJECT_NAME_DASH].arpansahu.me;
+
+            # Force HTTPS redirects
+            if ($scheme = http) {
+                return 301 https://$server_name$request_uri;
+            }
+
+            location / {
+                proxy_pass http://0.0.0.0:[PROJECT_DOCKER_PORT];
+                proxy_set_header Host $host;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                # WebSocket support
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+            }
+
+            listen 443 ssl; # managed by Certbot
+            ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
+            ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
+            include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+        }
+    ```
+
+  2. Nginx for Kubernetes Deployment 
+
+    ```bash
+        server {
+            listen 80;
+            server_name [PROJECT_NAME_DASH].arpansahu.me;
+
+            # Force HTTPS redirects
+            if ($scheme = http) {
+                return 301 https://$server_name$request_uri;
+            }
+
+            location / {
+                proxy_pass http://<CLUSTER_IP_ADDRESS>:[PROJECT_NODE_PORT];
+                proxy_set_header Host $host;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                # WebSocket support
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+            }
+
+            listen 443 ssl; # managed by Certbot
+            ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
+            ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
+            include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+        }
+    ```
+
+3.	Enable the new configuration: Create a symbolic link from this file to the sites-enabled directory.
+
+    ```bash
+      sudo ln -s /etc/nginx/sites-available/[PROJECT_NAME_DASH]/etc/nginx/sites-enabled/
+    ```
+
+4.	Test the Nginx configuration: Ensure that the new configuration doesn’t have any syntax errors.
+
+  ```bash
+    sudo nginx -t
+  ```
+  
+5.	Reload Nginx: Apply the new configuration by reloading Nginx.
+
+  ```bash
+    sudo systemctl reload nginx
+  ```
+
 in Jenkinsfile-build to copy .env file into build directory
 
 * Now Create a file named Jenkinsfile-build at the root of Git Repo and add following lines to file

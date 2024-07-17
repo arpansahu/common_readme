@@ -57,5 +57,8 @@ include_files = {
     "SERVICES": "../readme_manager/partials/services.md",
     "JENKINS PROJECT NAME": "../readme_manager/partials/jenkins_project_name.md",
     "JENKINS BUILD PROJECT NAME": "../readme_manager/partials/jenkins_build_project_name.md",
-    "STATIC PROJECT NAME": "../readme_manager/partials/static_project_name.md"
+    "STATIC PROJECT NAME": "../readme_manager/partials/static_project_name.md",
+    "PROJECT_NAME_DASH" : "../readme_manager/partials/project_name_with_dash.md",
+    "PROJECT_DOCKER_PORT": "../readme_manager/partials/project_docker_port.md",
+    "PROJECT_NODE_PORT": "../readme_manager/partials/project_node_port.md",
 }
