@@ -119,7 +119,7 @@ stage('Dependencies') {
     ```bash
         server {
             listen 80;
-            server_name [PROJECT_NAME_DASH].arpansahu.me;
+            server_name [DOMAIN_NAME];
 
             # Force HTTPS redirects
             if ($scheme = http) {
@@ -150,7 +150,7 @@ stage('Dependencies') {
     ```bash
         server {
             listen 80;
-            server_name [PROJECT_NAME_DASH].arpansahu.me;
+            server_name [DOMAIN_NAME];
 
             # Force HTTPS redirects
             if ($scheme = http) {

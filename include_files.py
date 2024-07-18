@@ -61,4 +61,5 @@ include_files = {
     "PROJECT_NAME_DASH" : "../readme_manager/partials/project_name_with_dash.md",
     "PROJECT_DOCKER_PORT": "../readme_manager/partials/project_docker_port.md",
     "PROJECT_NODE_PORT": "../readme_manager/partials/project_node_port.md",
+    "DOMAIN_NAME": "../readme_manager/partials/project_domain_name.md"
 }
