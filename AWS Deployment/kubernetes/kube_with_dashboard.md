@@ -124,8 +124,18 @@
 1. Edit Nginx Configuration
 
     ```bash
-    sudo vi /etc/nginx/sites-available/arpansahu
+    sudo vi /etc/nginx/sites-available/services
     ```
+
+    if /etc/nginx/sites-available/services does not exists
+
+        1. Create a new configuration file: Create a new file in the Nginx configuration directory. The location of this directory varies depending on your  operating system and Nginx installation, but it’s usually found at /etc/nginx/sites-available/.
+
+        ```bash
+            touch /etc/nginx/sites-available/services
+            vi /etc/nginx/sites-available/services
+        ```
+
 
 2. To know Internal ip of kind cluster
 

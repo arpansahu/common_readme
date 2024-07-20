@@ -50,11 +50,23 @@ sudo systemctl status jenkins
 ```
 
 Now for serving the Jenkins UI from Nginx add the following lines to the Nginx file located at 
-/etc/nginx/sites-available/arpansahu by running the following command
+/etc/nginx/sites-available/service by running the following command
+
+Edit Nginx Configuration
 
 ```bash
-sudo vi /etc/nginx/sites-available/arpansahu
+sudo vi /etc/nginx/sites-available/services
 ```
+
+if /etc/nginx/sites-available/services does not exists
+
+    1. Create a new configuration file: Create a new file in the Nginx configuration directory. The location of this directory varies depending on your  operating system and Nginx installation, but it’s usually found at /etc/nginx/sites-available/.
+
+    ```bash
+        touch /etc/nginx/sites-available/services
+        vi /etc/nginx/sites-available/services
+    ```
+
 
 * Add these lines to it.
 
