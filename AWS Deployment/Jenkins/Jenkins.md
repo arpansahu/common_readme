@@ -106,8 +106,8 @@ stage('Dependencies') {
 1. Create a new configuration file: Create a new file in the Nginx configuration directory. The location of this directory varies depending on your  operating system and Nginx installation, but it’s usually found at /etc/nginx/sites-available/.
 
   ```bash
-    touch /etc/nginx/sites-available/great-chat
-    vi /etc/nginx/sites-available/great-chat
+    touch /etc/nginx/sites-available/[PROJECT_NAME_DASH]
+    vi /etc/nginx/sites-available/[PROJECT_NAME_DASH]
   ```
 
 2.	Add the server block configuration: Copy and paste your server block configuration into this new file.
@@ -179,7 +179,7 @@ stage('Dependencies') {
 3.	Enable the new configuration: Create a symbolic link from this file to the sites-enabled directory.
 
     ```bash
-      sudo ln -s /etc/nginx/sites-available/[PROJECT_NAME_DASH]/etc/nginx/sites-enabled/
+      sudo ln -s /etc/nginx/sites-available/[PROJECT_NAME_DASH] /etc/nginx/sites-enabled/
     ```
 
 4.	Test the Nginx configuration: Ensure that the new configuration doesn’t have any syntax errors.
