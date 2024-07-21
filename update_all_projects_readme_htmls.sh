@@ -34,6 +34,12 @@ update_readme() {
     local repo_url=$1
     local repo_name=$(basename -s .git "$repo_url")
 
+    # Remove the repository directory if it already exists
+    if [ -d "$repo_name" ]; then
+        echo "Removing existing repository directory: $repo_name"
+        rm -rf "$repo_name"
+    fi
+
     # Extract repository path from URL
     REPO_PATH="${repo_url#https://github.com/}"
 
@@ -74,6 +80,12 @@ update_readme() {
             local repo_arpansahu_url="https://github.com/arpansahu/arpansahu.me"
             local repo_arpansahu_name=$(basename -s .git "$repo_arpansahu_url")
 
+            # Remove the arpansahu.me repository directory if it already exists
+            if [ -d "$repo_arpansahu_name" ]; then
+                echo "Removing existing repository directory: $repo_arpansahu_name"
+                rm -rf "$repo_arpansahu_name"
+            fi
+
             # Extract repository path from URL
             REPO_ARPANSAHU_PATH="${repo_arpansahu_url#https://github.com/}"
 
@@ -110,7 +122,7 @@ update_readme() {
             git --no-pager diff --cached templates/modules/project_detailed/project_partials/$repo_name/readme.html
 
             # Check if there are any differences between the working directory and the index
-            if git diff --cached --exit-code templates/modules/project_detailed/project_partials/$repo_name/readme.htmld; then
+            if git diff --cached --exit-code templates/modules/project_detailed/project_partials/$repo_name/readme.html; then
                 echo "readme.html not changed for $repo_arpansahu_name"
             else
                 # Commit and push the changes
