@@ -91,12 +91,12 @@ process_repo() {
     rm -rf "$repo_name"
 }
 
-# Function to update arpansahu.me repository with all readme.html files
+# Function to update arpansahu_dot_me repository with all readme.html files
 update_arpansahu_repo() {
-    local repo_arpansahu_url="https://github.com/arpansahu/arpansahu.me"
+    local repo_arpansahu_url="https://github.com/arpansahu/arpansahu_dot_me"
     local repo_arpansahu_name=$(basename -s .git "$repo_arpansahu_url")
 
-    # Remove the arpansahu.me repository directory if it already exists
+    # Remove the arpansahu_dot_me repository directory if it already exists
     if [ -d "$repo_arpansahu_name" ]; then
         echo "Removing existing repository directory: $repo_arpansahu_name"
         rm -rf "$repo_arpansahu_name"
@@ -120,7 +120,7 @@ update_arpansahu_repo() {
     if git clone "$AUTHENTICATED_ARPANSAHU_URL"; then
         echo "Successfully cloned ARPASAHU.ME repository: $repo_arpansahu_url"
     else
-        echo "Failed to clone ARPANSAHU.ME repository: $repo_arpansahu_url"
+        echo "Failed to clone arpansahu_dot_me repository: $repo_arpansahu_url"
         return
     fi
 
@@ -157,7 +157,7 @@ update_arpansahu_repo() {
     # Navigate back to the script directory
     cd "$SCRIPT_DIR"
 
-    # Remove the cloned arpansahu.me repository
+    # Remove the cloned arpansahu_dot_me repository
     rm -rf "$repo_arpansahu_name"
 }
 
@@ -182,7 +182,7 @@ main() {
         fi
     done
 
-    # Update the arpansahu.me repository with all collected readme.html files
+    # Update the arpansahu_dot_me repository with all collected readme.html files
     update_arpansahu_repo
 
     # Clean up temporary readme.html files
