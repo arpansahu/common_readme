@@ -12,17 +12,17 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        sh 'chmod +x update_all_projects_readme.sh'
-                        sh """
-                        echo "Running update_all_projects_readme.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
-                        ./update_all_projects_readme.sh ${params.environment} ${params.project_git_url}
-                        """
-
-                        // sh 'chmod +x update_all_projects_readme_htmls.sh'
+                        // sh 'chmod +x update_all_projects_readme.sh'
                         // sh """
-                        // echo "Running update_all_projects_readme_htmls.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
-                        // ./update_all_projects_readme_htmls.sh ${params.environment} ${params.project_git_url}
+                        // echo "Running update_all_projects_readme.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
+                        // ./update_all_projects_readme.sh ${params.environment} ${params.project_git_url}
                         // """
+
+                        sh 'chmod +x update_all_projects_readme_htmls.sh'
+                        sh """
+                        echo "Running update_all_projects_readme_htmls.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
+                        ./update_all_projects_readme_htmls.sh ${params.environment} ${params.project_git_url}
+                        """
 
 
                         // sh 'chmod +x update_all_projects_readme_wiki.sh'
