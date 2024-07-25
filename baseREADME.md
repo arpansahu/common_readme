@@ -24,6 +24,7 @@
 ## Deployment on AWS EC2/ Home Server Ubuntu 22.0 LTS/ Hostinger VPS Server
 
 [README of Intro]
+kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
 
 ### Step 1: Dockerize
 
