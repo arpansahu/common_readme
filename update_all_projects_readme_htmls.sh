@@ -141,12 +141,19 @@ update_arpansahu_repo() {
     echo "Checking differences for readme.html files"
     git --no-pager diff --cached
 
+    # Determine the commit message based on SPECIFIC_REPO
+    if [ -n "$SPECIFIC_REPO" ]; then
+        local commit_message="Automatic Update readme.html for $(basename -s .git "$SPECIFIC_REPO")"
+    else
+        local commit_message="Automatic Update readme.html for all repositories"
+    fi
+
     # Check if there are any differences between the working directory and the index
     if git diff --cached --exit-code; then
         echo "No changes to commit for $repo_arpansahu_name"
     else
         # Commit and push the changes
-        git commit -m "Automatic Update readme.html for all repositories"
+        git commit -m "$commit_message"
         if git push "$AUTHENTICATED_ARPANSAHU_URL"; then
             echo "Successfully pushed changes for $repo_arpansahu_name"
         else
