@@ -29,6 +29,37 @@ REPOS=(
 # Directory where the script is located
 SCRIPT_DIR=$(pwd)
 
+# Function to create the wiki if not present
+create_wiki_if_not_present() {
+    local repo_url=$1
+    local repo_name=$(basename -s .git "$repo_url")
+    local repo_wiki_url="$repo_url.wiki.git"
+    local repo_wiki_name=$(basename -s .git "$repo_wiki_url")
+    local REPO_WIKI_PATH="${repo_wiki_url#https://github.com/}"
+
+    if [ "$ENVIRONMENT" != "local" ]; then
+        AUTHENTICATED_WIKI_URL="https://${GIT_USERNAME}@github.com/${REPO_WIKI_PATH}"
+    else
+        AUTHENTICATED_WIKI_URL="https://github.com/${REPO_WIKI_PATH}"
+    fi
+
+    if git ls-remote "$repo_wiki_url" &> /dev/null; then
+        echo "Wiki already exists for $repo_name"
+    else
+        echo "Creating wiki for $repo_name"
+        mkdir "$repo_wiki_name"
+        cd "$repo_wiki_name"
+        git init
+        touch Home.md
+        git add Home.md
+        git commit -m "Initial commit for wiki"
+        git remote add origin "$AUTHENTICATED_WIKI_URL"
+        git push -u origin master
+        cd "$SCRIPT_DIR"
+        rm -rf "$repo_wiki_name"
+    fi
+}
+
 # Function to update Home.md for each repository
 update_readme() {
     local repo_url=$1
@@ -63,8 +94,11 @@ update_readme() {
     if [ -f "readme_manager/partials/introduction.md" ]; then
         echo "inside if "
         
-        local repo_wiki_url="$repo_url.wiki"
+        local repo_wiki_url="$repo_url.wiki.git"
         local repo_wiki_name=$(basename -s .git "$repo_wiki_url")
+
+        # Ensure the wiki exists
+        create_wiki_if_not_present "$repo_url"
 
         # Extract repository path from URL
         REPO_WIKI_PATH="${repo_wiki_url#https://github.com/}"
@@ -88,9 +122,9 @@ update_readme() {
             return
         fi
 
-       # Copy the file and echo the action
+        # Copy the file and echo the action
         echo "COPY readme_manager/partials/introduction_main.md to this wiki repository $repo_wiki_name/Home.md"
-        cp "readme_manager/partials/introduction_main.md" "$repo_wiki_name/Home.md"
+        cp "../readme_manager/partials/introduction_main.md" "$repo_wiki_name/Home.md"
         
         # Navigate to the repository directory
         cd "$repo_wiki_name" || { echo "Failed to navigate to repository directory: $repo_wiki_name"; return; }
@@ -117,7 +151,6 @@ update_readme() {
         echo "Home.md not found after running update script for $repo_name"
     fi
     
-
     # Navigate back to the script directory
     cd "$SCRIPT_DIR"
 
