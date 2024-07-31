@@ -19,21 +19,21 @@ pipeline {
                         
                         sh 'chmod +x update_all_projects_readme.sh'
                         sh """
-                        echo "Running update_all_projects_readme.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
-                        ./update_all_projects_readme.sh ${params.environment} ${params.project_git_url}
+                        echo "Running update_all_projects_readme.sh script for project: ${projectGitUrl} in environment: ${environment}"
+                        ./update_all_projects_readme.sh ${environment} ${projectGitUrl}
                         """
 
                         sh 'chmod +x update_all_projects_readme_htmls.sh'
                         sh """
-                        echo "Running update_all_projects_readme_htmls.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
-                        ./update_all_projects_readme_htmls.sh ${params.environment} ${params.project_git_url}
+                        echo "Running update_all_projects_readme_htmls.sh script for project: ${projectGitUrl} in environment: ${environment}"
+                        ./update_all_projects_readme_htmls.sh ${environment} ${projectGitUrl}
                         """
 
-
+                        // Uncomment if you want to run the wiki update script as well
                         // sh 'chmod +x update_all_projects_readme_wiki.sh'
                         // sh """
-                        // echo "Running update_all_projects_readme_wiki.sh script for project: ${params.project_git_url} in environment: ${params.environment}"
-                        // ./update_all_projects_readme_wiki.sh ${params.environment} ${params.project_git_url}
+                        // echo "Running update_all_projects_readme_wiki.sh script for project: ${projectGitUrl} in environment: ${environment}"
+                        // ./update_all_projects_readme_wiki.sh ${environment} ${projectGitUrl}
                         // """
                     }
                 }
