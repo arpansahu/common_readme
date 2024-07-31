@@ -30,11 +30,11 @@ pipeline {
                         """
 
                         // Uncomment if you want to run the wiki update script as well
-                        // sh 'chmod +x update_all_projects_readme_wiki.sh'
-                        // sh """
-                        // echo "Running update_all_projects_readme_wiki.sh script for project: ${projectGitUrl} in environment: ${environment}"
-                        // ./update_all_projects_readme_wiki.sh ${environment} ${projectGitUrl}
-                        // """
+                        sh 'chmod +x update_all_projects_readme_wiki.sh'
+                        sh """
+                        echo "Running update_all_projects_readme_wiki.sh script for project: ${projectGitUrl} in environment: ${environment}"
+                        ./update_all_projects_readme_wiki.sh ${environment} ${projectGitUrl}
+                        """
                     }
                 }
             }
