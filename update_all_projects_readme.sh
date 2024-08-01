@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Source the repository list
+source repos_list.sh
+
 # Function to set up the environment
 setup_environment() {
     if [ "$ENVIRONMENT" != "local" ]; then
@@ -16,13 +19,6 @@ setup_environment() {
         export GIT_ASKPASS="$GIT_ASKPASS_HELPER"
     fi
 }
-
-# List of project repositories to clone
-REPOS=(
-    "https://github.com/arpansahu/great_chat"
-    "https://github.com/arpansahu/arpansahu_dot_me"
-    # Add more repositories as needed
-)
 
 # Directory where the script is located
 SCRIPT_DIR=$(pwd)
