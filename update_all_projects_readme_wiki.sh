@@ -29,34 +29,15 @@ REPOS=(
 # Directory where the script is located
 SCRIPT_DIR=$(pwd)
 
-# Function to create the wiki if not present
-create_wiki_if_not_present() {
+# Function to check if wiki repository exists
+check_wiki_exists() {
     local repo_url=$1
-    local repo_name=$(basename -s .git "$repo_url")
-    local repo_wiki_url="$repo_url.wiki.git"
-    local repo_wiki_name=$(basename -s .git "$repo_wiki_url")
-    local REPO_WIKI_PATH="${repo_wiki_url#https://github.com/}"
-
-    if [ "$ENVIRONMENT" != "local" ]; then
-        AUTHENTICATED_WIKI_URL="https://${GIT_USERNAME}@github.com/${REPO_WIKI_PATH}"
-    else
-        AUTHENTICATED_WIKI_URL="https://github.com/${REPO_WIKI_PATH}"
-    fi
+    local repo_wiki_url="${repo_url%.git}.wiki.git"
 
     if git ls-remote "$repo_wiki_url" &> /dev/null; then
-        echo "Wiki already exists for $repo_name"
+        return 0
     else
-        echo "Creating wiki for $repo_name"
-        mkdir "$repo_wiki_name"
-        cd "$repo_wiki_name"
-        git init
-        touch Home.md
-        git add Home.md
-        git commit -m "Initial commit for wiki"
-        git remote add origin "$AUTHENTICATED_WIKI_URL"
-        git push -u origin master
-        cd "$SCRIPT_DIR"
-        rm -rf "$repo_wiki_name"
+        return 1
     fi
 }
 
@@ -94,11 +75,16 @@ update_readme() {
     if [ -f "readme_manager/partials/introduction.md" ]; then
         echo "inside if "
         
-        local repo_wiki_url="$repo_url.wiki.git"
+        local repo_wiki_url="${repo_url%.git}.wiki.git"
         local repo_wiki_name=$(basename -s .git "$repo_wiki_url")
 
-        # Ensure the wiki exists
-        create_wiki_if_not_present "$repo_url"
+        # Check if the wiki exists
+        if ! check_wiki_exists "$repo_url"; then
+            echo "Wiki repository does not exist for $repo_name. Please initialize the wiki using the GitHub UI."
+            cd "$SCRIPT_DIR"
+            rm -rf "$repo_name"
+            return
+        fi
 
         # Extract repository path from URL
         REPO_WIKI_PATH="${repo_wiki_url#https://github.com/}"
