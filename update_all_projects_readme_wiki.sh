@@ -130,14 +130,13 @@ update_readme() {
                 echo "Failed to push changes for $repo_wiki_name"
             fi
         fi
-        ls
     else
         echo "Home.md not found after running update script for $repo_name"
     fi
     
     # Navigate back to the script directory
-    cd "$SCRIPT_DIR"
-
+    cd ".."
+    ls
     # Remove the cloned repository
     echo "Cleaning up ..."
     rm -rf "$repo_name"
