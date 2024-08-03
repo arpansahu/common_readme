@@ -117,6 +117,7 @@ update_readme() {
         echo "Checking differences for Home.md"
         git --no-pager diff --cached Home.md
 
+
         # Check if there are any differences between the working directory and the index
         if git diff --cached --exit-code Home.md; then
             echo "Home.md not changed for $repo_wiki_name"
@@ -129,13 +130,13 @@ update_readme() {
                 echo "Failed to push changes for $repo_wiki_name"
             fi
         fi
+        ls
     else
         echo "Home.md not found after running update script for $repo_name"
     fi
     
     # Navigate back to the script directory
     cd "$SCRIPT_DIR"
-    ls
 
     # Remove the cloned repository
     echo "Cleaning up ..."
