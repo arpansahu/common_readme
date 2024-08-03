@@ -135,7 +135,7 @@ update_readme() {
     fi
     
     # Navigate back to the script directory
-    cd ".."
+    cd "../.."
     pwd
     ls
     # Remove the cloned repository
