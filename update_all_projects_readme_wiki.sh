@@ -136,8 +136,7 @@ update_readme() {
     
     # Navigate back to the script directory
     cd "../.."
-    pwd
-    ls
+
     # Remove the cloned repository
     echo "Cleaning up ..."
     rm -rf "$repo_name"
