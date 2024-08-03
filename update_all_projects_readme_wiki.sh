@@ -138,6 +138,7 @@ update_readme() {
 
     # Remove the cloned repository
     rm -rf "$repo_name"
+    rm -rf "$repo_wiki_name"
 }
 
 # Main script execution
