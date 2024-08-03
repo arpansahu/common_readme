@@ -106,7 +106,7 @@ update_readme() {
 
         # Copy the file and echo the action
         echo "COPY readme_manager/partials/introduction_main.md to this wiki repository $repo_wiki_name/Home.md"
-        cp "../readme_manager/partials/introduction_main.md" "$repo_wiki_name/Home.md"
+        cp "readme_manager/partials/introduction_main.md" "$repo_wiki_name/Home.md"
         
         # Navigate to the repository directory
         cd "$repo_wiki_name" || { echo "Failed to navigate to repository directory: $repo_wiki_name"; return; }
