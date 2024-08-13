@@ -8,7 +8,7 @@ Make sure to use Pipeline project and name it whatever you want I have named it 
 
 * Configure another Jenkins project from jenkins ui located at https://jenkins.arpansahu.me
 
-Make sure to use Pipeline project and name it whatever you want I have named it as {project_name}_build
+Make sure to use Pipeline project and name it whatever you want I have named it as [JENKINS BUILD PROJECT NAME]
 
 ![Jenkins Build Pipeline Configuration](/Jenkins-build.png)
 
