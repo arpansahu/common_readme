@@ -2,6 +2,7 @@
 
 REPOS=(
     "https://github.com/arpansahu/arpansahu_dot_me"
+    "https://github.com/arpansahu/borcelle_crm"
     "https://github.com/arpansahu/chew_and_cheer"
     "https://github.com/arpansahu/clock_work"
     "https://github.com/arpansahu/django_starter"
