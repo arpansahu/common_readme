@@ -2,13 +2,9 @@ Change settings.py static files and media files settings | Now I have added supp
 
 ```python
 if not DEBUG:
-    BUCKET_TYPE = config('BUCKET_TYPE')
+    BUCKET_TYPE = BUCKET_TYPE
 
     if BUCKET_TYPE == 'AWS':
-
-        AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-        AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
         AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
         AWS_DEFAULT_ACL = 'public-read'
         AWS_S3_OBJECT_PARAMETERS = {
@@ -20,22 +16,18 @@ if not DEBUG:
             'Access-Control-Allow-Origin': '*',
         }
         # s3 static settings
-        AWS_STATIC_LOCATION = 'portfolio/[STATIC PROJECT NAME]/static'
+        AWS_STATIC_LOCATION = f'portfolio/{PROJECT_NAME}/static'
         STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_LOCATION}/'
-        STATICFILES_STORAGE = '[STATIC PROJECT NAME].storage_backends.StaticStorage'
+        STATICFILES_STORAGE = f'{PROJECT_NAME}.storage_backends.StaticStorage'
         # s3 public media settings
-        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/media'
+        AWS_PUBLIC_MEDIA_LOCATION = f'portfolio/{PROJECT_NAME}/media'
         MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_PUBLIC_MEDIA_LOCATION}/'
-        DEFAULT_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PublicMediaStorage'
+        DEFAULT_FILE_STORAGE = f'{PROJECT_NAME}.storage_backends.PublicMediaStorage'
         # s3 private media settings
-        PRIVATE_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/private'
-        PRIVATE_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PrivateMediaStorage'
+        PRIVATE_MEDIA_LOCATION = f'portfolio/{PROJECT_NAME}/private'
+        PRIVATE_FILE_STORAGE = f'{PROJECT_NAME}.storage_backends.PrivateMediaStorage'
 
     elif BUCKET_TYPE == 'BLACKBLAZE':
-
-        AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-        AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
         AWS_S3_REGION_NAME = 'us-east-005'
 
         AWS_S3_ENDPOINT = f's3.{AWS_S3_REGION_NAME}.backblazeb2.com'
@@ -52,21 +44,18 @@ if not DEBUG:
             'Access-Control-Allow-Origin': '*',
         }
         # s3 static settings
-        AWS_STATIC_LOCATION = 'portfolio/[STATIC PROJECT NAME]/static'
+        AWS_STATIC_LOCATION = f'portfolio/{PROJECT_NAME}/static'
         STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.{AWS_STATIC_LOCATION}/'
-        STATICFILES_STORAGE = '[STATIC PROJECT NAME].storage_backends.StaticStorage'
+        STATICFILES_STORAGE = f'{PROJECT_NAME}.storage_backends.StaticStorage'
         # s3 public media settings
-        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/media'
+        AWS_PUBLIC_MEDIA_LOCATION = f'portfolio/{PROJECT_NAME}/media'
         MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.{AWS_PUBLIC_MEDIA_LOCATION}/'
-        DEFAULT_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PublicMediaStorage'
+        DEFAULT_FILE_STORAGE = f'{PROJECT_NAME}.storage_backends.PublicMediaStorage'
         # s3 private media settings
-        PRIVATE_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/private'
-        PRIVATE_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PrivateMediaStorage'
+        PRIVATE_MEDIA_LOCATION = f'portfolio/{PROJECT_NAME}/private'
+        PRIVATE_FILE_STORAGE = f'{PROJECT_NAME}.storage_backends.PrivateMediaStorage'
 
     elif BUCKET_TYPE == 'MINIO':
-        AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-        AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
         AWS_S3_REGION_NAME = 'us-east-1'  # MinIO doesn't require this, but boto3 does
         AWS_S3_ENDPOINT_URL = 'https://minio.arpansahu.me'
         AWS_DEFAULT_ACL = 'public-read'
@@ -80,21 +69,18 @@ if not DEBUG:
         }
 
         # s3 static settings
-        AWS_STATIC_LOCATION = 'portfolio/[STATIC PROJECT NAME]/static'
+        AWS_STATIC_LOCATION = f'portfolio/{PROJECT_NAME}/static'
         STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_STATIC_LOCATION}/'
-        STATICFILES_STORAGE = '[STATIC PROJECT NAME].storage_backends.StaticStorage'
+        STATICFILES_STORAGE = f'{PROJECT_NAME}.storage_backends.StaticStorage'
 
         # s3 public media settings
-        AWS_PUBLIC_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/media'
+        AWS_PUBLIC_MEDIA_LOCATION = f'portfolio/{PROJECT_NAME}/media'
         MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_PUBLIC_MEDIA_LOCATION}/'
-        DEFAULT_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PublicMediaStorage'
+        DEFAULT_FILE_STORAGE = f'{PROJECT_NAME}.storage_backends.PublicMediaStorage'
 
         # s3 private media settings
-        PRIVATE_MEDIA_LOCATION = 'portfolio/[STATIC PROJECT NAME]/private'
-        PRIVATE_FILE_STORAGE = '[STATIC PROJECT NAME].storage_backends.PrivateMediaStorage'
-
-    
-
+        PRIVATE_MEDIA_LOCATION = 'portfolio/borcelle_crm/private'
+        PRIVATE_FILE_STORAGE = 'borcelle_crm.storage_backends.PrivateMediaStorage'
 else:
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/3.2/howto/static-files/
