@@ -33,7 +33,20 @@
         [KIND CONFIG MD]
     ```
 
-2. Create the Kind cluster:
+2. 	Create a kubelet configuration file for Kind:
+
+    ```bash
+        touch kubelet-config.yaml
+        vi kubelet-config.yaml
+    ```
+
+    paste the below code into the file
+
+    ```yaml
+        [KIND CONFIG MD]
+    ```
+
+3. Create the Kind cluster:
 
     ```bash
         kind create cluster --config kind-config.yaml

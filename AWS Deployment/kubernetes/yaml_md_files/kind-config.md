@@ -8,3 +8,6 @@
         hostPort: 7800
       - containerPort: 443
         hostPort: 7801
+      extraMounts:
+      - hostPath: /etc/kubernetes/kubelet-config.yaml
+        containerPath: /var/lib/kubelet/config.yaml

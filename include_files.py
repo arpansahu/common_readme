@@ -27,6 +27,7 @@ include_files = {
 
     #kubernetes
     "KIND CONFIG MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/kind-config.md",
+    "KUBELET CONFIG MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/kubelet-config.md",
     "DASHBOARD ADMIN USER MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-adminuser.md",
     "DASHBOARD ADMIN USER ROLE BIND MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-adminuser-rolebinding.md",
     "DASHBOARD SERVICE": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashbord-service.md",
