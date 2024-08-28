@@ -9,5 +9,6 @@ REPOS=(
     "https://github.com/arpansahu/great_chat"
     "https://github.com/arpansahu/numerical"
     "https://github.com/arpansahu/school_chale_hum"
+    "https://github.com/arpansahu/third_eye"
     # Add more repositories as needed
 )
