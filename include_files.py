@@ -28,17 +28,21 @@ include_files = {
     "INCLUDE FILES": "https://raw.githubusercontent.com/arpansahu/common_readme/main/include_files.py",
     "MONITORING": "https://raw.githubusercontent.com/arpansahu/arpansahu-one-scripts/main/README.md?token=GHSAT0AAAAAACTHOPGXTRCHN6GJQNHQ43QKZUKVMPA",
 
-    #kubernetes
-    "KIND CONFIG MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/kind-config.md",
-    "KUBELET CONFIG MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/kubelet-config.md",
-    "DASHBOARD ADMIN USER MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-adminuser.md",
-    "DASHBOARD ADMIN USER ROLE BIND MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-adminuser-rolebinding.md",
-    "DASHBOARD SERVICE": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashbord-service.md",
-    "DASHBOARD ADMIN SA MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa.md",
-    "DASHBOARD ADMIN SA BINDING": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-binding.md",
-    "DASHBOARD ADMIN SA SECRET": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-secret.md",
-    "KUBE WITH DASHBOARD" : "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/kube_with_dashboard.md", 
-    "KUBE DEPLOYMENT": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/deployment.md",
+    #kubernetes with kind
+    # "KIND CONFIG MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/kind-config.md",
+    # "KUBELET CONFIG MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/kubelet-config.md",
+    # "DASHBOARD ADMIN USER MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-adminuser.md",
+    # "DASHBOARD ADMIN USER ROLE BIND MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-adminuser-rolebinding.md",
+    # "DASHBOARD SERVICE": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashbord-service.md",
+    # "DASHBOARD ADMIN SA MD": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa.md",
+    # "DASHBOARD ADMIN SA BINDING": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-binding.md",
+    # "DASHBOARD ADMIN SA SECRET": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/yaml_md_files/dashboard-admin-sa-secret.md",
+    # "KUBE WITH DASHBOARD" : "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/kube_with_dashboard.md", 
+    # "KUBE DEPLOYMENT": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes/deployment.md",
+
+    # kubernetes with rancher
+    "KUBE WITH DASHBOARD" : "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes_with_rancher/kube_with_dashboard.md", 
+    "KUBE DEPLOYMENT": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kubernetes_with_rancher/deployment.md",
 
     # project files
     "env.example": "../env.example",
