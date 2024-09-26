@@ -1,0 +1,15 @@
+[Unit]
+Description=Apache Kafka Server
+Documentation=http://kafka.apache.org/documentation.html
+Requires=zookeeper.service
+After=zookeeper.service
+
+[Service]
+Type=simple
+Environment="KAFKA_OPTS=-Djava.security.auth.login.config=/root/kafka/kafka_server_jaas.conf"
+ExecStart=/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties
+ExecStop=/usr/local/kafka/bin/kafka-server-stop.sh
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target
