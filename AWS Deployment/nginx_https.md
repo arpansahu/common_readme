@@ -28,7 +28,7 @@
     Now installing certificate
     
     ```bash
-    sudo certbot --nginx --rsa-key-size 4096 --no-redirect
+    sudo certbot --nginx --rsa-key-size 4096 --no-redirect -d arpansahu.me -d www.arpansahu.me
     ```
     
     It will ask for the domain name then you can enter your base domain 
@@ -39,11 +39,11 @@
     Now These lines will be added to your # Nginx configuration: /etc/nginx/sites-available/arpansahu
     
     ```bash
-    listen 443 ssl;
-    ssl_certificate /etc/letsencrypt/live/www.supersecure.codes/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/www.supersecure.codes/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
     ```
     
     Redirecting HTTP to HTTPS
@@ -95,7 +95,7 @@
     Run the following Command
 
     ```bash
-    sudo certbot certonly --manual --preferred-challenges dns
+    sudo certbot certonly --manual --preferred-challenges dns -d "*.arpansahu.me" -d "arpansahu.me"
     ```
     
     Again you will be asked domain name and here you will use *.arpansahu.me. and second domain you will use is
@@ -381,7 +381,7 @@
           -s http://localhost:8080
          ```
 
-         Note: When we edited acme-dns config file there we mentioned the port 8090 and thats why we are using this port here also
+         Note: When we edited acme-dns config file there we mentioned the port 8090(now 8080) and thats why we are using this port here also
          
        * Creating Another DNS Entry 
 
@@ -433,7 +433,7 @@
          --test-cert \ 
          --dry-run \ 
          --preferred-challenges dns \
-         --manual-auth-hook 'acme-dns-client'       
+         --manual-auth-hook 'acme-dns-client'
          ```
          
        * Renew certificate (actually)
