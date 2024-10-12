@@ -55,76 +55,29 @@
         vi ~/.kube/config
     ```
 
-### Deploy the Kubernetes Dashboard
-
-1. Create the kubernetes-dashboard namespace:
-
-    ```bash
-        kubectl create namespace kubernetes-dashboard
+    Paste the copied content which will look something like this:
     ```
+        apiVersion: v1
+        kind: Config
+        clusters:
+        - name: "local"
+        cluster:
+            server: "https://rancher.arpansahu.me/k8s/clusters/local"
 
-2. Deploy the Kubernetes Dashboard:
+        users:
+        - name: "local"
+        user:
+            token: "kubeconfig-user-gf9xx76krz:68b7z8xf86zb6pvjjdbv9hhqtd29p72tr2kp8n65n6qp24fpf5ss8l"
 
-    ```bash
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+        contexts:
+        - name: "local"
+        context:
+            user: "local"
+            cluster: "local"
+
+        current-context: "local"
     ```
-
-3. Create an admin user:
-
-    Create a file named dashboard-adminuser.yaml
-
-    ```bash
-        touch dashboard-adminuser.yaml
-        vi dashboard-adminuser.yaml
-    ```
-
-    copy and paste below content into it
-
-    ```yaml
-        [DASHBOARD ADMIN USER MD]
-    ```
-
-4. Create ClusterRoleBinding:
-
-    Create a file named dashboard-adminuser-rolebinding.yaml
-
-    ```bash
-        touch dashboard-adminuser-rolebinding.yaml
-        vi dashboard-adminuser-rolebinding.yaml
-    ```
-
-    copy and paste below content into it
-
-    ```yaml
-        [DASHBOARD ADMIN USER ROLE BIND MD]
-    ```
-5. Apply both the files
-
-    ```bash
-        kubectl apply -f dashboard-adminuser.yaml
-        kubectl apply -f dashboard-adminuser-rolebinding.yaml
-    ```
-
-6. Get the admin user token:
-
-    ```bash
-        kubectl -n kubernetes-dashboard create token admin-user
-    ```
-
-### Expose the Kubernetes Dashboard Service using NodePort
-
-1. Edit the Kubernetes Dashboard service:
-
-    ```bash
-        kubectl -n kubernetes-dashboard edit service kubernetes-dashboard
-    ```
-
-2. Modify the service to use NodePort (do not copy blindly just make the mentioned changes):
-
-    ```yaml
-        [DASHBOARD SERVICE]
-    ```
-
 
 ### Configure On-Premises Nginx as a Reverse Proxy
 
