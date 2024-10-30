@@ -1,13 +1,13 @@
 Previously This project was hosted on Heroku, but so I started hosting this and all other projects in a 
 Single EC2 Machine, which cost me a lot, so now I have shifted all the projects to my own Home Server with 
-Ubuntu 22.0 LTS Server, except for portfolio project at https://www.arpansahu.me along with Nginx 
+Ubuntu 22.0 LTS Server, except for portfolio project at https://arpansahu.me along with Nginx 
 
 
 Now there is an EC2 server running with an nginx server and arpansahu.me portfolio
 Nginx forwarded https://arpansahu.me/ to the Home Server 
 
 Multiple Projects are running inside dockers so all projects are dockerized.
-You can refer to all projects at https://www.arpansahu.me/projects
+You can refer to all projects at https://arpansahu.me/projects
 
 Every project has a different port on which it runs predefined inside Dockerfile and docker-compose.yml
 

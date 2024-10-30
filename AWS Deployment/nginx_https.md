@@ -28,7 +28,7 @@
     Now installing certificate
     
     ```bash
-    sudo certbot --nginx --rsa-key-size 4096 --no-redirect -d arpansahu.me -d www.arpansahu.me
+    sudo certbot --nginx --rsa-key-size 4096 --no-redirect -d arpansahu.me -d arpansahu.me
     ```
     
     It will ask for the domain name then you can enter your base domain 
