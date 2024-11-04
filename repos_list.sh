@@ -11,6 +11,5 @@ REPOS=(
     "https://github.com/arpansahu/school_chale_hum"
     "https://github.com/arpansahu/third_eye"
     "https://github.com/arpansahu/altered_datum_api",
-    "https://github.com/arpansahu/scrape_optimus"
     # Add more repositories as needed
 )
