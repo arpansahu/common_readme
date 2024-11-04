@@ -9,6 +9,6 @@
 7. Used Self Hosted Redis VPS for redis which is not accessible outside AWS, Used Redis Server, hosted on Home Server itself as Redis on Home Server
 8. Used PostgresSql Schema based Database, all projects are using single Postgresql. 
 9. PostgresSQL is also hosted on VPS Server Itself.
-10. Using MiniIo as self hosted S3 Storage Server. Running at: https://minio.arpansahu.me
+10. Using MinIO as self hosted S3 Storage Server. Running at: https://minio.arpansahu.me
 11. Using Harbor as Self Hosted Docker Registry. Running at: https://harbor.arpansahu.me
 12. Using Sentry for logging and debugging. Running at: https://arpansahu.sentry.io

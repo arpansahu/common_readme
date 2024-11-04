@@ -1,4 +1,4 @@
-## MiniIo (Self hosted S3 Storage)
+## MinIO (Self hosted S3 Storage)
 
 MinIO is a high-performance, distributed object storage system designed for large-scale data infrastructures. It is open-source and compatible with the Amazon S3 API, making it a popular choice for organizations looking for scalable, secure, and cost-effective storage solutions. 
 
@@ -261,7 +261,7 @@ Note: Nginx is already set in the other steps as seen before right now I will di
         ./update_minio_certs.sh
     ```
 
-You can connect to my MiniIo Server using terminal 
+You can connect to my MinIO Server using terminal 
 ```bash
   mc alias set myminio https://arpansahu.me api_key api_secret --api S3v4
   mc ls
