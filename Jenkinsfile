@@ -9,7 +9,7 @@ pipeline {
         stage('Update READMEs') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'a8543f6d-1f32-4a4c-bb31-d7fffe78828e', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'github_auth', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         
                         def projectGitUrl = params.project_git_url ?: ''
                         def environment = params.environment ?: 'prod'
