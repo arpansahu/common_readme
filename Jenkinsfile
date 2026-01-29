@@ -1,8 +1,6 @@
 pipeline {
     agent { label 'local' }
-    environment {
-        CREDS = credentials('a8543f6d-1f32-4a4c-bb31-d7fffe78828e')
-    }
+
     parameters {
         string(name: 'project_git_url', defaultValue: '', description: 'Project name to process')
         string(name: 'environment', defaultValue: 'prod', description: 'Environment to run the script in')
@@ -46,19 +44,19 @@ pipeline {
                 sh """
                 curl -s \
                 -X POST \
-                --user ${MAIL_JET_API_KEY}:${MAIL_JET_API_SECRET} \
+                --user $MAIL_JET_API_KEY:$MAIL_JET_API_SECRET \
                 https://api.mailjet.com/v3.1/send \
                 -H "Content-Type:application/json" \
                 -d '{
                     "Messages":[
                             {
                                     "From": {
-                                            "Email": "${MAIL_JET_EMAIL_ADDRESS}",
+                                            "Email": "$MAIL_JET_EMAIL_ADDRESS",
                                             "Name": "ArpanSahuOne Jenkins Notification"
                                     },
                                     "To": [
                                             {
-                                                    "Email": "${MY_EMAIL_ADDRESS}",
+                                                    "Email": "$MY_EMAIL_ADDRESS",
                                                     "Name": "Development Team"
                                             }
                                     ],
@@ -77,25 +75,25 @@ pipeline {
                 sh """
                 curl -s \
                 -X POST \
-                --user ${MAIL_JET_API_KEY}:${MAIL_JET_API_SECRET} \
+                --user $MAIL_JET_API_KEY:$MAIL_JET_API_SECRET \
                 https://api.mailjet.com/v3.1/send \
                 -H "Content-Type:application/json" \
                 -d '{
                     "Messages":[
                             {
                                     "From": {
-                                            "Email": "${MAIL_JET_EMAIL_ADDRESS}",
+                                            "Email": "$MAIL_JET_EMAIL_ADDRESS",
                                             "Name": "ArpanSahuOne Jenkins Notification"
                                     },
                                     "To": [
                                             {
-                                                    "Email": "${MY_EMAIL_ADDRESS}",
+                                                    "Email": "$MY_EMAIL_ADDRESS",
                                                     "Name": "Developer Team"
                                             }
                                     ],
                                     "Subject": "${currentBuild.fullDisplayName} deployment failed",
                                     "TextPart": "Hola Development Team, your project ${currentBuild.fullDisplayName} deployment failed",
-                                    "HTMLPart": "<h3>Hola Development Team, your project ${currentBuild.fullDisplayName} is not deployed, Build Failed </h3> < br> <p> Build Url: ${env.BUILD_URL}  </p>"
+                                    "HTMLPart": "<h3>Hola Development Team, your project ${currentBuild.fullDisplayName} is not deployed, Build Failed </h3> <br> <p> Build Url: ${env.BUILD_URL}  </p>"
                             }
                     ]
                 }'
