@@ -25,6 +25,8 @@
 
 [README of Intro]
 
+**Note:** For complete Home Server setup from scratch (including laptop conversion, SSH GUI access, and router configuration), see the [Home Server Setup Guide](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/home_server_setup.md).
+
 ### Step 1: Dockerize
 
 [README of Docker Installation]
@@ -73,8 +75,6 @@ After all these steps your Nginx configuration file located at /etc/nginx/sites-
 ### Step 6: CI/CD using Jenkins
 
 [README of Jenkins Setup]
-
-[JENKINS_END]
 
 [SERVICES]
 

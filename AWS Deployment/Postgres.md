@@ -1,10 +1,18 @@
-## Postgresql Server
+## PostgreSQL Server
 
-IT would be a nightmare to have your own vps to save cost and not hosting your own postgresql server.
+It would be a nightmare to have your own VPS to save cost and not hosting your own PostgreSQL server. This guide explains how to set up a production-ready PostgreSQL server on an Ubuntu machine from scratch, accessible from the same server, local LAN, and public static IP (via router port forwarding). The setup focuses on simplicity, security, and long-term stability.
 
-postgresql_server can be access accessed
+### Prerequisites
 
-### Installing PostgreSql
+Before installing PostgreSQL, ensure you have:
+
+1. Ubuntu / Debian server
+2. Root or sudo access
+3. Static public IP (if accessing from outside)
+4. Router access for port forwarding configuration
+5. Port 5432 available
+
+### Installing PostgreSQL
 
 1. Update the package list to make sure you have the latest information
 
@@ -15,7 +23,7 @@ postgresql_server can be access accessed
 2. Install the PostgreSQL package
 
     ```bash
-    sudo apt install postgresql postgresql-contrib
+    sudo apt install postgresql postgresql-contrib -y
     ```
 
 3. PostgreSQL should now be installed on your server. By default, PostgreSQL creates a user named `postgres` with administrative privileges. You can switch to this user to perform administrative tasks:
@@ -30,21 +38,38 @@ postgresql_server can be access accessed
     psql
     ```
 
-5. Set a password for the `postgres` user:
+### Enable Secure Password Authentication (SCRAM)
+
+1. Enable modern password encryption
 
     ```sql
-    ALTER USER postgres WITH PASSWORD 'your_password';
+    ALTER SYSTEM SET password_encryption = 'scram-sha-256';
+    SELECT pg_reload_conf();
     ```
 
-   Replace `'your_password'` with the desired password.
+2. Set a password for the `postgres` user
 
-6. Exit the PostgreSQL shell:
+    ```sql
+    ALTER USER postgres WITH PASSWORD 'STRONG_PASSWORD';
+    ```
+
+    Replace `STRONG_PASSWORD` with a strong password.
+
+3. Verify encryption
+
+    ```sql
+    SELECT usename, passwd FROM pg_shadow;
+    ```
+
+    Passwords should start with: `SCRAM-SHA-256$`
+
+4. Exit the PostgreSQL shell
 
     ```sql
     \q
     ```
 
-7. Exit the `postgres` user session:
+5. Exit the `postgres` user session
 
     ```bash
     exit
@@ -54,189 +79,440 @@ Now, PostgreSQL is installed on your Ubuntu server. You can access the PostgreSQ
 
 Remember to configure your PostgreSQL server according to your security needs, such as modifying the `pg_hba.conf` file to control access, setting up SSL for secure connections, and configuring other PostgreSQL settings as required for your environment.
 
+### PostgreSQL Core Configuration
 
-## Configuring Postgresql
-
-1. open postgresql.conf file
-
-    ```bash
-    sudo vi /etc/postgresql/14/main/postgresql.conf
-    ```
-     
-    14 is the version which i have installed your version can be different
-
-2. Find the listen_addresses line and set it to:
+1. Open postgresql.conf file
 
     ```bash
-    listen_addresses = 'localhost'
+    sudo nano /etc/postgresql/16/main/postgresql.conf
     ```
 
-    Now the thing is if u don't want to serve it using nginx u can also set it to * all so that database can be connected from any where
-
-3. 	Edit pg_hba.conf to allow connections:
+    Note: 16 is the version which I have installed, your version can be different. Check your version with:
 
     ```bash
-    sudo nano /etc/postgresql/14/main/pg_hba.conf
+    psql --version
     ```
 
-    14 is the version which i have installed your version can be different
+2. Find and configure the following settings
 
-4. 	Add the following line in the end:
+    ```conf
+    listen_addresses = '*'
+    port = 5432
+    ssl = on
+    ```
+
+    This allows PostgreSQL to accept connections from:
+    - localhost
+    - LAN
+    - public IP
+
+3. Save and close the file
+
+### Client Authentication Configuration
+
+1. Edit pg_hba.conf to allow connections
 
     ```bash
-    host    all             all             127.0.0.1/32            md5
+    sudo nano /etc/postgresql/16/main/pg_hba.conf
     ```
 
-    if u want to use without nginx
+    Note: 16 is the version which I have installed, your version can be different.
+
+2. Add or modify the following lines (Recommended configuration)
+
+    ```conf
+    # Unix socket
+    local   all             all                                     peer
+
+    # Localhost
+    host    all             all             127.0.0.1/32            scram-sha-256
+
+    # LAN access
+    host    all             all             192.168.1.0/24          scram-sha-256
+
+    # Public access (restrict if possible)
+    host    all             all             0.0.0.0/0               scram-sha-256
+    ```
+
+    Explanation:
+    - First line: Local Unix socket connections
+    - Second line: Localhost connections using SCRAM authentication
+    - Third line: Local network (192.168.1.x) connections
+    - Fourth line: Public access from any IP (use with caution)
+
+3. Save and close the file
+
+4. Reload PostgreSQL to apply changes
 
     ```bash
-    host    all             all             0.0.0.0/0            md5
+    sudo systemctl reload postgresql
     ```
 
-    I have added both 
+### Creating Application Database User
 
-5. Restart PostgreSQL to apply changes:
+Do not use the `postgres` user for applications. Create a dedicated user:
+
+1. Switch to postgres user and open psql
+
+    ```bash
+    sudo -u postgres psql
+    ```
+
+2. Create a new user
+
+    ```sql
+    CREATE USER app_user WITH PASSWORD 'VERY_STRONG_PASSWORD';
+    ```
+
+    Replace `app_user` with your desired username and `VERY_STRONG_PASSWORD` with a strong password.
+
+3. Create a database (optional)
+
+    ```sql
+    CREATE DATABASE your_database;
+    ```
+
+4. Grant privileges to the user
+
+    ```sql
+    GRANT ALL PRIVILEGES ON DATABASE your_database TO app_user;
+    ```
+
+5. Exit PostgreSQL shell
+
+    ```sql
+    \q
+    ```
+
+### Firewall Configuration
+
+If using UFW firewall, allow the PostgreSQL port:
+
+1. Allow PostgreSQL port
+
+    ```bash
+    sudo ufw allow 5432/tcp
+    ```
+
+2. Reload firewall
+
+    ```bash
+    sudo ufw reload
+    ```
+
+3. Verify firewall status
+
+    ```bash
+    sudo ufw status
+    ```
+
+### Router Configuration (Port Forwarding)
+
+For external access via public IP, configure port forwarding on your router:
+
+Create a single port-forward rule on your router:
+
+| Setting       | Value                              |
+| ------------- | ---------------------------------- |
+| Protocol      | TCP                                |
+| External Port | 5432                               |
+| Internal Port | 5432                               |
+| Internal IP   | Server LAN IP (e.g. 192.168.1.200) |
+| Enable        | Yes                                |
+
+This allows external access using your static public IP.
+
+Note: Router configuration varies by manufacturer. Consult your router's manual for specific instructions.
+
+### Verification and Testing
+
+1. Check PostgreSQL is listening
+
+    ```bash
+    sudo ss -lntp | grep 5432
+    ```
+
+    Expected output:
+    ```
+    0.0.0.0:5432
+    ```
+
+2. Test connection on the server
+
+    ```bash
+    psql -h 127.0.0.1 -p 5432 -U app_user your_database
+    ```
+
+3. Test connection from LAN
+
+    From another machine on the same network:
+
+    ```bash
+    psql -h 192.168.1.200 -p 5432 -U app_user your_database
+    ```
+
+    Replace `192.168.1.200` with your server's LAN IP.
+
+4. Test connection from public network
+
+    From outside your network:
+
+    ```bash
+    psql -h <STATIC_PUBLIC_IP> -p 5432 -U app_user your_database
+    ```
+
+    Replace `<STATIC_PUBLIC_IP>` with your actual public IP address.
+
+5. Test connection with SSL requirement
+
+    ```bash
+    psql "postgresql://app_user:password@your-server-ip:5432/your_database?sslmode=require"
+    ```
+
+### Managing PostgreSQL Service
+
+1. Start PostgreSQL
+
+    ```bash
+    sudo systemctl start postgresql
+    ```
+
+2. Stop PostgreSQL
+
+    ```bash
+    sudo systemctl stop postgresql
+    ```
+
+3. Restart PostgreSQL
 
     ```bash
     sudo systemctl restart postgresql
     ```
 
-## Configuring Nginx as Reverse proxy
-
-Note: In previous steps we have already seen how to setup the reverse proxy with Nginx for Django projects and installation process and everything
-
-1.	Install the nginx-extras package to support the stream module:
+4. Reload configuration
 
     ```bash
-    sudo apt install nginx-extras
-    ````
-
-2.	Add a stream configuration file for the PostgreSQL stream:
-
-    ```bash
-    sudo vi /etc/nginx/nginx.conf
+    sudo systemctl reload postgresql
     ```
 
-    1.	Add the following configuration:
+5. Check status
 
     ```bash
-    stream {
-        upstream postgresql_upstream {
-            server 127.0.0.1:5432;  # PostgreSQL server
-        }
+    sudo systemctl status postgresql
+    ```
 
-        server {
-            listen 9550 ssl;  # Use SSL on port 443
-            proxy_pass postgresql_upstream;
+6. Enable auto-start on boot
 
-            ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem;  # SSL certificate
-            ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem;  # SSL certificate key
-            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;  # SSL DH parameters
-            include /etc/letsencrypt/options-ssl-nginx.conf;  # SSL options
+    ```bash
+    sudo systemctl enable postgresql
+    ```
 
-            proxy_timeout 600s;
-            proxy_connect_timeout 600s;
+### Common PostgreSQL Commands
+
+1. List all databases
+
+    ```sql
+    \l
+    ```
+
+2. Connect to a database
+
+    ```sql
+    \c database_name
+    ```
+
+3. List all tables
+
+    ```sql
+    \dt
+    ```
+
+4. List all users
+
+    ```sql
+    \du
+    ```
+
+5. Show current user
+
+    ```sql
+    SELECT current_user;
+    ```
+
+6. Exit psql
+
+    ```sql
+    \q
+    ```
+
+### Security Best Practices
+
+Important security considerations for this setup:
+
+1. Use strong passwords for all database users
+2. Use non-superuser accounts for applications
+3. Prefer SCRAM-SHA-256 authentication over MD5
+4. Restrict source IPs in router firewall if possible
+5. Always connect with SSL requirement:
+
+    ```bash
+    sslmode=require
+    ```
+
+6. Regularly update PostgreSQL to the latest security patches
+7. Monitor PostgreSQL logs for suspicious activity
+8. Use different passwords for different environments
+9. Backup your databases regularly
+10. Limit the number of users with SUPERUSER privilege
+
+### Debugging Common Issues
+
+1. Connection Refused Error
+
+    Cause: PostgreSQL service not running or firewall blocking
+
+    Fix:
+
+    ```bash
+    sudo systemctl status postgresql
+    sudo systemctl start postgresql
+    sudo ufw status
+    ```
+
+2. Authentication Failed Error
+
+    Cause: Wrong password or pg_hba.conf misconfigured
+
+    Fix:
+
+    ```bash
+    sudo nano /etc/postgresql/16/main/pg_hba.conf
+    # Verify authentication method is correct
+    sudo systemctl reload postgresql
+    ```
+
+3. Cannot Connect from Remote Host
+
+    Cause: listen_addresses not set to '*' or firewall blocking
+
+    Fix:
+
+    ```bash
+    sudo nano /etc/postgresql/16/main/postgresql.conf
+    # Set listen_addresses = '*'
+    sudo systemctl restart postgresql
+    sudo ufw allow 5432/tcp
+    ```
+
+4. SSL Connection Error
+
+    Cause: SSL not enabled or certificates missing
+
+    Fix:
+
+    ```bash
+    sudo nano /etc/postgresql/16/main/postgresql.conf
+    # Set ssl = on
+    sudo systemctl restart postgresql
+    ```
+
+5. Port Already in Use
+
+    Cause: Another service using port 5432
+
+    Fix:
+
+    ```bash
+    sudo netstat -tulnp | grep 5432
+    # Stop conflicting service or change PostgreSQL port
+    ```
+
+### Connection String Examples
+
+1. Basic connection
+
+    ```bash
+    psql -h hostname -p 5432 -U username -d database_name
+    ```
+
+2. Connection with SSL
+
+    ```bash
+    psql "postgresql://username:password@hostname:5432/database_name?sslmode=require"
+    ```
+
+3. Connection from Django
+
+    ```python
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'your_database',
+            'USER': 'app_user',
+            'PASSWORD': 'your_password',
+            'HOST': 'your-server-ip',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
         }
     }
     ```
 
-    Since i have generated ssl certs already in nginx setup i am using those certificates here itself
+4. Connection from Python (psycopg2)
 
-    2. 	Test the Nginx Configuration:
+    ```python
+    import psycopg2
 
-    ```bash
-    sudo nginx -t
+    conn = psycopg2.connect(
+        host="your-server-ip",
+        port="5432",
+        database="your_database",
+        user="app_user",
+        password="your_password",
+        sslmode="require"
+    )
     ```
 
-    If error comes nginx: [emerg] "stream" directive is not allowed here in /etc/nginx/conf.d/postgresql.conf:1
-    nginx: configuration file /etc/nginx/nginx.conf test failed    
+5. Connection from Node.js
 
-    Follow these steps: 
+    ```javascript
+    const { Client } = require('pg');
 
-        0.	Remove the custom configuration file:
-
-            ```bash
-            sudo rm /etc/nginx/conf.d/postgresql.conf
-            ```
-
-        1.	Open the main Nginx configuration file: 
-
-            ```bash
-            sudo nano /etc/nginx/nginx.conf
-            ```
-
-        2.	Add the Stream Block at the Appropriate Place
-        Add the following stream block at the end of the nginx.conf file, or within the appropriate context:
-
-            ```bash
-            user www-data;
-            worker_processes auto;
-            pid /run/nginx.pid;
-            include /etc/nginx/modules-enabled/*.conf;
-
-            events {
-                worker_connections 768;
-            }
-
-            http {
-                sendfile on;
-                tcp_nopush on;
-                tcp_nodelay on;
-                keepalive_timeout 65;
-                types_hash_max_size 2048;
-
-                include /etc/nginx/mime.types;
-                default_type application/octet-stream;
-
-                access_log /var/log/nginx/access.log;
-                error_log /var/log/nginx/error.log;
-
-                gzip on;
-                gzip_disable "msie6";
-
-                include /etc/nginx/conf.d/*.conf;
-                include /etc/nginx/sites-enabled/*;
-            }
-
-            stream {
-                upstream postgresql_upstream {
-                    server 127.0.0.1:5432;  # PostgreSQL server
-                }
-
-                server {
-                    listen 9550 ssl;  # Use SSL on port different 443
-                    proxy_pass postgresql_upstream;
-
-                    ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem;  # SSL certificate
-                    ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem;  # SSL certificate key
-                    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;  # SSL DH parameters
-                    include /etc/letsencrypt/options-ssl-nginx.conf;  # SSL options
-
-                    proxy_timeout 600s;
-                    proxy_connect_timeout 600s;
-                }
-            }
-            ```
-        
-        3.	Test the Nginx Configuration
-        
-            ```bash
-            sudo nginx -t
-            ```
-
-    3. Reload Nginx to apply the new configuration:
-
-    ```bash
-    sudo systemctl reload nginx
+    const client = new Client({
+      host: 'your-server-ip',
+      port: 5432,
+      database: 'your_database',
+      user: 'app_user',
+      password: 'your_password',
+      ssl: { rejectUnauthorized: false }
+    });
     ```
 
-3. Testing connecting with postgres without ip and using domain
+### Final Outcome
 
-    ```bash
-    psql "postgres://username:password@domain/database_name?sslmode=require"
-    ```
+After following this guide, you will have:
 
-    
-```bash
-psql "postgres://user:user_pass@arpansahu.me/database_name?sslmode=require"
-```
+1. PostgreSQL securely hosted on your own server
+2. Accessible locally, on LAN, and via public IP
+3. Modern SCRAM-SHA-256 password encryption
+4. SSL-enabled connections
+5. Proper firewall configuration
+6. Router port forwarding configured
+7. Application-specific database users
+8. Simple configuration that's easy to debug and maintain
+9. Ready for Docker, Kubernetes, or future scaling
+
+### Example Access Details
+
+| Item                | Value                                         |
+| ------------------- | --------------------------------------------- |
+| Database Host       | your-server-ip or domain                      |
+| Port                | 5432                                          |
+| Database Name       | your_database                                 |
+| Username            | app_user                                      |
+| Password            | your_password                                 |
+| SSL Mode            | require                                       |
+| Connection String   | postgresql://app_user:password@host:5432/db   |
+
+PostgreSQL server can be accessed at: your-server-ip:5432 or domain:5432

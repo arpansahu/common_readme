@@ -1,465 +1,633 @@
+## Nginx HTTPS
 
-1. Base Domain:  Enabling HTTPS for base domain only or a single subdomain
+This guide explains how to configure HTTPS for Nginx using wildcard SSL certificates with automatic renewal. This is the actual, production-tested setup using acme.sh with DNS-01 challenge for Namecheap.
 
-    To allow visitors to access your site over HTTPS, you’ll need an SSL/TLS certificate that sits on your web server. Certificates are issued by a Certificate Authority (CA). We’ll use a free CA called Let’s Encrypt. To install the certificate, you can use the Certbot client, which gives you an utterly painless step-by-step series of prompts.
-    Before starting with Certbot, you can tell Nginx up front to disable TLS versions 1.0 and 1.1 in favour of versions 1.2 and 1.3. TLS 1.0 is end-of-life (EOL), while TLS 1.1 contained several vulnerabilities that were fixed by TLS 1.2. To do this, open the file /etc/nginx/nginx.conf. Find the following line:
+### Prerequisites
 
-    Open nginx.conf file end change ssl_protocols 
-    
+Before configuring HTTPS, ensure you have:
+
+1. Nginx already installed and configured (see nginx.md)
+2. Domain name with DNS configured
+3. Namecheap account with API access enabled
+4. Root or sudo access
+5. Basic Nginx configuration working
+
+### Architecture Overview
+
+```
+Internet (HTTPS)
+   │
+   └─ Nginx (Port 443) - TLS Termination
+        │
+        └─ Backend Services (HTTP, localhost)
+             ├─ Jenkins (8080)
+             ├─ Portainer (9998)
+             ├─ PgAdmin (5050)
+             └─ Other Services
+```
+
+Key Principles:
+- Nginx owns all TLS/SSL certificates
+- Single wildcard certificate for all subdomains
+- Automatic renewal via cron
+- No Traefik, no Certbot complications
+- Clean, debuggable setup
+
+### Why acme.sh
+
+We use acme.sh instead of Certbot or acme-dns for these reasons:
+
+1. Native DNS-01 automation
+2. Works perfectly with Namecheap
+3. Simple cron-based auto-renewal
+4. No systemd services required
+5. No port 80/443 dependency
+6. Cleaner than Certbot for wildcard certificates
+7. Direct integration with 50+ DNS providers
+
+### Certificate Coverage
+
+The wildcard certificate covers:
+
+```
+arpansahu.space
+*.arpansahu.space
+```
+
+This means all subdomains (jenkins.arpansahu.space, portainer.arpansahu.space, etc.) use the same certificate.
+
+### Installing acme.sh
+
+1. Download and install acme.sh
+
+    ```bash
+    curl https://get.acme.sh | sh
+    ```
+
+2. Reload shell configuration
+
+    ```bash
+    source ~/.bashrc
+    ```
+
+3. Set Let's Encrypt as default CA
+
+    ```bash
+    acme.sh --set-default-ca --server letsencrypt
+    ```
+
+4. Verify installation
+
+    ```bash
+    acme.sh --version
+    ```
+
+### Configuring Namecheap API Access
+
+1. Enable Namecheap API access
+
+    - Login to Namecheap
+    - Go to: Profile → Tools → API Access
+    - Enable API Access
+    - Whitelist your server's public IP
+
+2. Get API credentials
+
+    - API Key: Found in API Access section
+    - Username: Your Namecheap username
+    - Source IP: Your server's public IP
+
+3. Export environment variables
+
+    ```bash
+    export NAMECHEAP_API_KEY="YOUR_API_KEY"
+    export NAMECHEAP_USERNAME="YOUR_USERNAME"
+    export NAMECHEAP_SOURCEIP="YOUR_PUBLIC_IP"
+    ```
+
+4. Make credentials persistent (optional)
+
+    Add to ~/.bashrc:
+
+    ```bash
+    echo 'export NAMECHEAP_API_KEY="YOUR_API_KEY"' >> ~/.bashrc
+    echo 'export NAMECHEAP_USERNAME="YOUR_USERNAME"' >> ~/.bashrc
+    echo 'export NAMECHEAP_SOURCEIP="YOUR_PUBLIC_IP"' >> ~/.bashrc
+    source ~/.bashrc
+    ```
+
+### Issuing Wildcard Certificate
+
+1. Issue certificate with DNS-01 challenge
+
+    ```bash
+    acme.sh --issue \
+      --dns dns_namecheap \
+      -d arpansahu.space \
+      -d '*.arpansahu.space'
+    ```
+
+    This will:
+    - Automatically create DNS TXT records
+    - Validate domain ownership
+    - Issue wildcard certificate
+    - Store certificate in ~/.acme.sh/arpansahu.space_ecc/
+
+2. Wait for DNS propagation
+
+    The process may take 1-2 minutes as DNS records propagate.
+
+3. Verify certificate
+
+    ```bash
+    openssl x509 -in ~/.acme.sh/arpansahu.space_ecc/fullchain.cer \
+      -noout -subject -ext subjectAltName
+    ```
+
+    Expected output:
+    ```
+    subject=CN = arpansahu.space
+    X509v3 Subject Alternative Name:
+        DNS:arpansahu.space, DNS:*.arpansahu.space
+    ```
+
+### Installing Certificate for Nginx
+
+1. Create SSL directory
+
+    ```bash
+    sudo mkdir -p /etc/nginx/ssl/arpansahu.space
+    ```
+
+2. Install certificate with automatic reload
+
+    ```bash
+    acme.sh --install-cert -d arpansahu.space \
+      --key-file       /etc/nginx/ssl/arpansahu.space/privkey.pem \
+      --fullchain-file /etc/nginx/ssl/arpansahu.space/fullchain.pem \
+      --reloadcmd     "sudo systemctl reload nginx"
+    ```
+
+    This creates a hook that automatically reloads Nginx when certificate renews.
+
+3. Set proper permissions
+
+    ```bash
+    sudo chmod 644 /etc/nginx/ssl/arpansahu.space/fullchain.pem
+    sudo chmod 600 /etc/nginx/ssl/arpansahu.space/privkey.pem
+    ```
+
+4. Verify certificate files
+
+    ```bash
+    ls -la /etc/nginx/ssl/arpansahu.space/
+    ```
+
+### Configuring Nginx for HTTPS
+
+1. Update Nginx TLS protocols
+
+    Edit /etc/nginx/nginx.conf:
+
     ```bash
     sudo vi /etc/nginx/nginx.conf
-    
-    From ssl_protocols TLSv1 TLSv1.1 TLSv1.2; to ssl_protocols TLSv1.2 TLSv1.3;
     ```
-    
-    Use this command to verify if nginx.conf file is correct or not
-    
+
+    Find and update:
+
+    ```nginx
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ```
+
+2. Update service configuration
+
+    Edit /etc/nginx/sites-available/services:
+
+    ```bash
+    sudo vi /etc/nginx/sites-available/services
+    ```
+
+3. Add HTTPS server blocks (golden template)
+
+    ```nginx
+    # HTTP → HTTPS redirect
+    server {
+        listen 80;
+        listen [::]:80;
+
+        server_name jenkins.arpansahu.space;
+        return 301 https://$host$request_uri;
+    }
+
+    # HTTPS reverse proxy
+    server {
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+
+        server_name jenkins.arpansahu.space;
+
+        ssl_certificate     /etc/nginx/ssl/arpansahu.space/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/arpansahu.space/privkey.pem;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers off;
+
+        location / {
+            proxy_pass http://127.0.0.1:8080;
+
+            proxy_http_version 1.1;
+
+            proxy_set_header Host              $host;
+            proxy_set_header X-Real-IP         $remote_addr;
+            proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+    }
+    ```
+
+4. Test Nginx configuration
+
     ```bash
     sudo nginx -t
     ```
-    
-    Now you’re ready to install and use Certbot, you can use Snap to install Certbot:
-    
-    ```bash
-    sudo snap install --classic certbot
-    sudo ln -s /snap/bin/certbot /usr/bin/certbot
-    ```
-    
-    Now installing certificate
-    
-    ```bash
-    sudo certbot --nginx --rsa-key-size 4096 --no-redirect -d arpansahu.me -d arpansahu.me
-    ```
-    
-    It will ask for the domain name then you can enter your base domain 
-    I have generated SSL for arpansahu.me
-    
-    Then a few questions will be asked answer them all and your SSL certificate will be generated
 
-    Now These lines will be added to your # Nginx configuration: /etc/nginx/sites-available/arpansahu
-    
-    ```bash
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-    ```
-    
-    Redirecting HTTP to HTTPS
-    Open the nginx configuration file  and make it like this
+5. Reload Nginx
 
     ```bash
-    sudo vi /etc/nginx/sites-available/arpansahu
+    sudo systemctl reload nginx
     ```
 
-    ```bash
-    server_tokens               off;
-    access_log                  /var/log/nginx/supersecure.access.log;
-    error_log                   /var/log/nginx/supersecure.error.log;
-     
+### Configuring Multiple Services
+
+Repeat the server block pattern for each service:
+
+1. Example: Portainer
+
+    ```nginx
+    # HTTP → HTTPS
     server {
-      server_name               arpansahu.me;
-      listen                    80;
-      return                    307 https://$host$request_uri;
+        listen 80;
+        listen [::]:80;
+        server_name portainer.arpansahu.space;
+        return 301 https://$host$request_uri;
     }
-    
+
+    # HTTPS
     server {
-    
-      location / {
-        proxy_pass              http://{ip_of_home_server/ localhost}:8000;
-        proxy_set_header        Host $host;
-        
-        listen 443 ssl; # managed by Certbot
-        ssl_certificate /etc/letsencrypt/live/arpansahu.me/fullchain.pem; # managed by Certbot
-        ssl_certificate_key /etc/letsencrypt/live/arpansahu.me/privkey.pem; # managed by Certbot
-        include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-    }                          
-    ``` 
-    
-    You can dry run and check whether it's renewal is working or not
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+        server_name portainer.arpansahu.space;
+
+        ssl_certificate     /etc/nginx/ssl/arpansahu.space/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/arpansahu.space/privkey.pem;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+
+        location / {
+            proxy_pass https://127.0.0.1:9443;
+            proxy_ssl_verify off;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+        }
+    }
+    ```
+
+    Note: Portainer uses its own HTTPS on port 9443, so we proxy to https:// instead of http://.
+
+2. Example: PgAdmin
+
+    ```nginx
+    # HTTP → HTTPS
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name pgadmin.arpansahu.space;
+        return 301 https://$host$request_uri;
+    }
+
+    # HTTPS
+    server {
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+        server_name pgadmin.arpansahu.space;
+
+        ssl_certificate     /etc/nginx/ssl/arpansahu.space/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/arpansahu.space/privkey.pem;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+
+        location / {
+            proxy_pass http://127.0.0.1:5050;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+        }
+    }
+    ```
+
+### Automatic Certificate Renewal
+
+acme.sh automatically installs a cron job for certificate renewal.
+
+1. Verify cron job
 
     ```bash
-    sudo certbot renew --dry-run
+    crontab -l
     ```
-    
-    Note: this process was for arpansahu.me and not for all subdomains.
-    For all subdomains, we will have to set a wildcard SSL certificate
 
+    Expected output:
+    ```
+    0 0 * * * "/home/USERNAME/.acme.sh"/acme.sh --cron --home "/home/USERNAME/.acme.sh" > /dev/null
+    ```
 
-2. Enabling a Wildcard certificate
-
-    Here we will enable an SSL certificate for all subdomains at once
-        
-    Run the following Command
+2. Test renewal (dry run)
 
     ```bash
-    sudo certbot certonly --manual --preferred-challenges dns -d "*.arpansahu.me" -d "arpansahu.me"
+    acme.sh --renew -d arpansahu.space --force --dry-run
     ```
-    
-    Again you will be asked domain name and here you will use *.arpansahu.me. and second domain you will use is
-    arpansahu.me.
-    
-    Now, you should have a question in your mind about why we are generating SSL for arpansahu.me separately.
-    It's because Let's Encrypt does not include a base domain with wildcard certificates for subdomains.
 
-    After running the above command you will see a message similar to this
-      
-    ```bash
-    Saving debug log to /var/log/letsencrypt/letsencrypt.log
-    Please enter the domain name(s) you would like on your certificate (comma and/or
-    space separated) (Enter 'c' to cancel): *.arpansahu.me
-    Requesting a certificate for *.arpansahu.me
-    
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Please deploy a DNS TXT record under the name:
-    
-    _acme-challenge.arpansahu.me.
-    
-    with the following value:
-    
-    dpWCxvq3mARF5iGzSfaRNXwmdkUSs0wgsTPhSaX1gK4
-    
-    Before continuing, verify the TXT record has been deployed. Depending on the DNS
-    provider, this may take some time, from a few seconds to multiple minutes. You can
-    check if it has finished deploying with the aid of online tools, such as Google
-    Admin Toolbox: https://toolbox.googleapps.com/apps/dig/#TXT/_acme-challenge.arpansahu.me.
-    Look for one or more bolded line(s) below the line '; ANSWER'. It should show the
-    value(s) you've just added.
-   
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Press Enter to Continue
-    ```
-   
-    You will be given a DNS challenge called ACME challenger you have to create a DNS TXT record in DNS.
-    Similar to the below record.
-        
-    ```bash
-    TXT Record  _acme-challenge dpWCxvq3mARF5iGzSfaRNXwmdkUSs0wgsTPhSaX1gK4 5 Automatic
-    ```
-    
-    Now, use this URL to verify whether records are updated or not
+3. Renewal flow
 
-    https://toolbox.googleapps.com/apps/dig/#TXT/_acme-challenge.arpansahu.me (arpansahu.me is domain)
+    - Certificate checks daily
+    - Renews automatically 60 days before expiry
+    - Updates files in /etc/nginx/ssl/arpansahu.space/
+    - Nginx reloads automatically via hook
+    - Zero manual intervention required
 
-    If it's verified then press enter the terminal as mentioned above
-        
-    Then your certificate will be generated
+### Verifying HTTPS Setup
+
+1. Check certificate validity
 
     ```bash
-    Successfully received a certificate.
-    The certificate is saved at: /etc/letsencrypt/live/arpansahu.me-0001/fullchain.pem            (use this in your nginx configuration file)
-    Key is saved at:         /etc/letsencrypt/live/arpansahu.me-0001/privkey.pem
-    This certificate expires on 2023-01-20.
-    These files will be updated when the certificate is renewed.
+    openssl x509 -in /etc/nginx/ssl/arpansahu.space/fullchain.pem \
+      -noout -dates -subject -ext subjectAltName
     ```
-        
-    You can notice here, the certificate generated is arpansahu.me-0001 and not arpansahu.me
-    because we already generated a certificate named arpansahu.me
-        
-    So remember to delete it before generating this wildcard certificate
-    using command
+
+2. Test HTTPS locally
 
     ```bash
-    sudo certbot delete
+    curl -I https://jenkins.arpansahu.space
     ```
-        
-    Note: This certificate will not be renewed automatically. Auto-renewal of --manual certificates requires the use of an authentication hook script (--manual-auth-hook) but one was not provided. To renew this certificate, repeat this same Certbot command before the certificate's expiry date.
 
-3. Generating Wildcard SSL certificate and Automating its renewal
+3. Check TLS ownership
 
-    1. Modify your ec2 inbound rules 
-    
+    ```bash
+    sudo ss -lntp | grep :443
+    ```
+
+    Expected: Only nginx should be listening on port 443.
+
+4. Online SSL test
+
+    Use: https://www.ssllabs.com/ssltest/
+
+    Test your domain to verify SSL configuration quality.
+
+### Important Notes About Traefik
+
+If you're using k3s or Docker Swarm, be aware:
+
+1. k3s installs Traefik by default
+
+    Traefik will hijack port 443 and serve its own certificates.
+
+2. Disable Traefik in k3s
+
+    ```bash
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable=traefik" sh -
+    ```
+
+3. Why Nginx, not Traefik
+
+    - Nginx already handles HTTPS
+    - Avoids port 443 conflicts
+    - Simpler architecture
+    - Single certificate management point
+    - No certificate conflicts
+
+### Common Issues and Fixes
+
+1. Port 443 already in use
+
+    Cause: Traefik or another service using port 443
+
+    Fix:
+
+    ```bash
+    sudo ss -lntp | grep :443
+    # Stop conflicting service
+    # For k3s: reinstall with --disable=traefik
+    ```
+
+2. Certificate not found
+
+    Cause: Certificate not installed to Nginx directory
+
+    Fix:
+
+    ```bash
+    acme.sh --install-cert -d arpansahu.space \
+      --key-file       /etc/nginx/ssl/arpansahu.space/privkey.pem \
+      --fullchain-file /etc/nginx/ssl/arpansahu.space/fullchain.pem \
+      --reloadcmd     "sudo systemctl reload nginx"
+    ```
+
+3. DNS-01 challenge fails
+
+    Cause: Namecheap API not enabled or wrong credentials
+
+    Fix:
+
+    - Verify API is enabled in Namecheap
+    - Check IP is whitelisted
+    - Verify environment variables:
       ```bash
-      –	sgr-0219f1387d28c96fb	IPv4	DNS (TCP)	TCP	53	0.0.0.0/0	–	
-      –	sgr-01b2b32c3cee53aa9	IPv4	SSH	TCP	22	0.0.0.0/0	–
-      –	sgr-0dfd03bbcdf60a4f7	IPv4	HTTP	TCP	80	0.0.0.0/0	–
-      –	sgr-02668dff944b9b87f	IPv4	HTTPS	TCP	443	0.0.0.0/0	–
-      –	sgr-013f089a3f960913c	IPv4	DNS (UDP)	UDP	53	0.0.0.0/0	–
+      echo $NAMECHEAP_API_KEY
+      echo $NAMECHEAP_USERNAME
+      echo $NAMECHEAP_SOURCEIP
       ```
-    
-   2. Install acme-dns Server
-
-      * Create a folder for acme-dns and change the directory
-
-        ```bash
-         sudo mkdir /opt/acme-dns
-         cd !$
-        ```
-
-      * Download and extract tar with acme-dns from GitHub
-
-        ```bash
-        sudo curl -L -o acme-dns.tar.gz \
-        https://github.com/joohoi/acme-dns/releases/download/v0.8/acme-dns_0.8_linux_amd64.tar.gz
-        sudo tar -zxf acme-dns.tar.gz
-        ```
-
-      * List files
-
-        ```bash
-        sudo ls
-        ```
-
-      * Clean Up
-
-        ```bash
-        sudo rm acme-dns.tar.gz
-        ```
-
-      * Create a soft link
-
-        ```bash
-        sudo ln -s \
-        /opt/acme-dns/acme-dns /usr/local/bin/acme-dns
-        ```
-
-      * Create a minimal acme-dns user
-
-         ```bash
-         sudo adduser \
-         --system \	
-         --gecos "acme-dns Service" \
-         --disabled-password \
-         --group \
-         --home /var/lib/acme-dns \
-         acme-dns
-        ```
-
-      * Update default acme-dns config compared with IP from the AWS console. Can't bind to the public address need to use private one.
-
-        ```bash
-        IP addr
-	  
-        sudo mkdir -p /etc/acme-dns
-	  
-        sudo mv /opt/acme-dns/config.cfg /etc/acme-dns/
-	  
-        sudo vim /etc/acme-dns/config.cfg
-        ```
-      
-      * Replace
-
-        ```bash
-        listen = "127.0.0.1:53” to listen = “private IP of the ec2 instance” 172.31.93.180:53(port will be 53)
- 
-        Similarly, Edit other details mentioned below  
-
-        # domain name to serve the requests off of
-        domain = "auth.arpansahu.me"
-        # zone name server
-        nsname = "auth.arpansahu.me"
-        # admin email address, where @ is substituted with .
-        nsadmin = "admin@arpansahu.me"
-
-
-        records = [
-          # domain pointing to the public IP of your acme-dns server
-           "auth.arpansahu.me. A 44.199.177.138. (public elastic IP)”,
-          # specify that auth.example.org will resolve any *.auth.example.org records
-           "auth.arpansahu.me. NS auth.arpansahu.me.”,
-        ]
-	
-        [api]
-        # listen IP eg. 127.0.0.1
-        IP = "127.0.0.1”. (Changed)
-
-        # listen port, eg. 443 for default HTTPS
-        port = "8080" (Changed).         ——— We will use port 8090 because we will also use Jenkins which will be running on 8080 port
-        # possible values: "letsencrypt", "letsencryptstaging", "cert", "none"
-        tls = "none"   (Changed)
-
-        ```
-
-      * Move the systemd service and reload
-
-        ```bash
-        cat acme-dns.service
-     
-        sudo mv \
-        acme-dns.service /etc/systemd/system/acme-dns.service
-	  
-        sudo systemctl daemon-reload
-        ```
-
-      * Start and enable acme-dns server
-
-        ```bash
-        sudo systemctl enable acme-dns.service
-        sudo systemctl start acme-dns.service
-        ```
-
-      * Check acme-dns for possible errors
-
-        ```bash
-        sudo systemctl status acme-dns.service
-        ```
-
-      * Use journalctl to debug in case of errors
-
-         ```bash
-         journalctl --unit acme-dns --no-pager --follow
-         ```
 
-      * Create A record for your domain
-
-         ```bash
-         auth.arpansahu.me IN A <public-IP>
-         ```
+4. Certificate not renewing
 
-      * Create NS record for auth.arpansahu.me pointing to auth.arpansahu.me. This means, that auth.arpansahu.me is
-        responsible for any *.auth.arpansahu.me records
+    Cause: Cron job missing or hook failed
 
-        ```bash
-        auth.arpansahu.me IN NS auth.arpansahu.me
-        ```
-
-      * Your DNS record will be looking like this
-
-        ```bash
-        A Record	auth	44.199.177.138	Automatic	
-        NS Record	auth	auth.arpansahu.me.	Automatic
-        ```
-
-      * Test acme-dns server (Split the screen)
-
-        ```bash
-        journalctl -u acme-dns --no-pager --follow
-        ```
-
-      * From the local host try to resolve the random DNS record
-
-        ```bash
-        dig api.arpansahu.me
-        dig api.auth.arpansahu.me
-        dig 7gvhsbvf.auth.arpansahu.me
-        ``` 
-        
-   3. Install acme-dns-client 
-
-     ```bash
-     sudo mkdir /opt/acme-dns-client
-     cd !$
-    
-     sudo curl -L \
-     -o acme-dns-client.tar.gz \
-     https://github.com/acme-dns/acme-dns-client/releases/download/v0.2/acme-dns-client_0.2_linux_amd64.tar.gz
-    
-     sudo tar -zxf acme-dns-client.tar.gz
-     ls
-     sudo rm acme-dns-client.tar.gz
-     sudo ln -s \
-     /opt/acme-dns-client/acme-dns-client /usr/local/bin/acme-dns-client 
-     ```
-
-   4. Install Certbot
-
-     ```bash
-     cd
-     sudo snap install core; sudo snap refresh core
-     sudo snap install --classic certbot
-     sudo ln -s /snap/bin/certbot /usr/bin/certbot
-     ```
-
-    Note: you can skip this step if Certbot is already installed
-
-    5. Get Letsencrypt Wildcard Certificate
-       * Create a new acme-dns account for your domain and set it up
-
-         ```bash
-         sudo acme-dns-client register \
-         -d arpansahu.me -s http://localhost:8090
-         ```
-
-        The above command is old now we will use the new command 
-
-         ```bash
-         sudo acme-dns-client register \
-          -d arpansahu.me \
-          -allow 0.0.0.0/0 \
-          -s http://localhost:8080
-         ```
-
-         Note: When we edited acme-dns config file there we mentioned the port 8090(now 8080) and thats why we are using this port here also
-         
-       * Creating Another DNS Entry 
-
-         ```bash
-         CNAME Record	_acme-challenge	e6ac0f0a-0358-46d6-a9d3-8dd41f44c7ec.auth.arpansahu.me.	Automatic
-         ```
-
-        Since the last update in  the last step now two more entries should be added 
-
-         ```bash
-         CAA Record @	0 issuewild "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1424899626"  Automatic
-
-         CAA Record @	0 issue "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1424899626"
-         Automatic
-         ```
-
-        Same as an entry that needs to be added to complete a time challenge as previously we did.
-       * Check whether the entry is added successfully or not
-
-         ```bash
-         dig _acme-challenge.arpansahu.me
-         ```
-
-       * Get a wildcard certificate
-
-         ```bash
-         sudo certbot certonly \
-         --manual \
-         --test-cert \ 
-         --preferred-challenges dns \ 
-         --manual-auth-hook 'acme-dns-client' \ 
-         -d ‘*.arpansahu.me’ -d arpansahu.me
-         ```
-
-        Note: Here we have to mention both the base and wildcard domain names with -d since let's encrypt don't provide base domain ssl by default in wildcard domain ssl
-       
-       * Verifying the certificate
-
-         ```bash
-         sudo openssl x509 -text -noout \
-         -in /etc/letsencrypt/live/arpansahu.me/fullchain.pem
-         ```
-
-       * Renew certificate (test)
-
-         ```bash
-         sudo certbot renew \
-         --manual \ 
-         --test-cert \ 
-         --dry-run \ 
-         --preferred-challenges dns \
-         --manual-auth-hook 'acme-dns-client'
-         ```
-         
-       * Renew certificate (actually)
-
-         ```bash
-         sudo certbot renew \
-         --manual \
-         --preferred-challenges dns \
-         --manual-auth-hook 'acme-dns-client'       
-         ```
-
-       * Check the entry is added successfully or not
-
-         ```bash
-         dig _acme-challenge.arpansahu.me
-         ```
-
-    6. Setup Auto-Renew for Letsencrypt WILDCARD Certificate
-       * Setup cronjob
-
-         ```bash
-         sudo crontab -e
-         ```
-
-       * Add the following lines to the file
-
-         ```bash
-         0 */12 * * * certbot renew --manual --preferred-challenges dns --manual-auth-hook 'acme-dns-client
-         ```
+    Fix:
+
+    ```bash
+    crontab -l  # Verify cron exists
+    acme.sh --renew -d arpansahu.space --force
+    ```
+
+5. Nginx fails to reload
+
+    Cause: Syntax error in configuration
+
+    Fix:
+
+    ```bash
+    sudo nginx -t
+    # Fix reported errors
+    sudo systemctl reload nginx
+    ```
+
+### Security Best Practices
+
+1. Use strong TLS protocols
+
+    ```nginx
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ```
+
+2. Disable weak ciphers
+
+    ```nginx
+    ssl_prefer_server_ciphers off;
+    ```
+
+3. Enable HTTP/2
+
+    ```nginx
+    listen 443 ssl http2;
+    ```
+
+4. Add security headers
+
+    ```nginx
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options DENY always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    ```
+
+5. Hide Nginx version
+
+    ```nginx
+    server_tokens off;
+    ```
+
+### Certificate Management
+
+1. List all certificates
+
+    ```bash
+    acme.sh --list
+    ```
+
+2. View certificate info
+
+    ```bash
+    acme.sh --info -d arpansahu.space
+    ```
+
+3. Force renewal
+
+    ```bash
+    acme.sh --renew -d arpansahu.space --force
+    ```
+
+4. Revoke certificate
+
+    ```bash
+    acme.sh --revoke -d arpansahu.space
+    ```
+
+5. Remove certificate
+
+    ```bash
+    acme.sh --remove -d arpansahu.space
+    ```
+
+### Final Verification Checklist
+
+Run these commands to verify HTTPS is working:
+
+```bash
+# Check certificate validity
+openssl x509 -in /etc/nginx/ssl/arpansahu.space/fullchain.pem -noout -dates
+
+# Check TLS ownership (should only show nginx)
+sudo ss -lntp | grep :443
+
+# Test Nginx configuration
+sudo nginx -t
+
+# Test HTTPS locally
+curl -I https://jenkins.arpansahu.space
+
+# Verify cron job
+crontab -l | grep acme
+```
+
+### What This Setup Provides
+
+After following this guide, you will have:
+
+1. Wildcard SSL certificate covering all subdomains
+2. Automatic certificate renewal (zero maintenance)
+3. HTTPS for all services via single certificate
+4. TLS 1.2 and 1.3 support
+5. HTTP to HTTPS automatic redirection
+6. Clean, debuggable configuration
+7. No Traefik/Certbot complications
+8. Production-ready SSL/TLS setup
+9. Nginx as single point of TLS termination
+10. 60-day advance renewal notifications
+
+### Architecture Summary
+
+```
+Internet (HTTPS)
+   │
+   └─ Nginx (Port 443) - TLS Termination
+        │ [Wildcard Certificate]
+        │
+        ├─ jenkins.arpansahu.space → localhost:8080
+        ├─ portainer.arpansahu.space → localhost:9443
+        ├─ pgadmin.arpansahu.space → localhost:5050
+        └─ *.arpansahu.space → various localhost ports
+```
+
+### Key Rules to Remember
+
+1. Nginx owns ALL TLS certificates
+2. One wildcard certificate for all subdomains
+3. acme.sh handles renewal automatically
+4. Always proxy to localhost for security
+5. Traefik must be disabled in k3s
+6. Test config before reload: `sudo nginx -t`
+7. Certificate location: /etc/nginx/ssl/arpansahu.space/
+8. Renewal happens 60 days before expiry
+
+### Example Service Ports
+
+| Service      | Domain                          | Backend                |
+| ------------ | ------------------------------- | ---------------------- |
+| Jenkins      | jenkins.arpansahu.space         | http://127.0.0.1:8080  |
+| Portainer    | portainer.arpansahu.space       | https://127.0.0.1:9443 |
+| PgAdmin      | pgadmin.arpansahu.space         | http://127.0.0.1:5050  |
+| RabbitMQ     | rabbitmq.arpansahu.space        | http://127.0.0.1:15672 |
+| PostgreSQL   | postgres.arpansahu.space        | tcp://127.0.0.1:5432   |
+
+Note: Portainer is the only service that uses HTTPS backend (9443).
+
+### Next Steps
+
+After completing HTTPS setup:
+
+1. Test all services via HTTPS
+2. Enable HTTP Strict Transport Security (HSTS)
+3. Add security headers
+4. Configure rate limiting
+5. Set up monitoring for certificate expiry
+6. Regular security audits
+
+For Kubernetes setup, see: [Kubernetes with Portainer Setup](kubernetes_with_portainer/deployment.md)

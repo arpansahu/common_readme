@@ -1,0 +1,1333 @@
+## Home Server Setup
+
+This guide provides step-by-step instructions for converting a laptop or desktop into a production-ready home server for hosting applications, databases, and services. This is the actual setup used for arpansahu.space running all projects reliably from a home environment.
+
+### Prerequisites
+
+Before starting, ensure you have:
+
+1. Laptop or desktop with minimum specifications
+2. Reliable internet connection
+3. Basic networking knowledge
+4. Access to router for port forwarding
+5. Domain name (optional but recommended)
+6. UPS for power backup (highly recommended)
+
+### Minimum Hardware Requirements
+
+**Basic Setup:**
+- CPU: Intel i3/i5 or AMD Ryzen 3/5 (4 cores minimum)
+- RAM: 8GB (16GB recommended)
+- Storage: 256GB SSD (500GB recommended)
+- Network: Ethernet port (1Gbps)
+- Age: Any laptop/desktop from 2015 onwards
+
+**Recommended Setup:**
+- CPU: Intel i5/i7 or AMD Ryzen 5/7 (6+ cores)
+- RAM: 16GB or more
+- Storage: 500GB NVMe SSD + 1TB HDD for backups
+- Network: Gigabit Ethernet
+- UPS: 1000VA with 2-4 hour backup
+
+**Tested Setup (My Configuration):**
+- Laptop: HP Pavilion 15 (2018 model)
+- CPU: Intel i5-8250U (4 cores, 8 threads)
+- RAM: 16GB DDR4
+- Storage: 512GB NVMe SSD
+- Additional: 1TB USB 3.0 HDD for backups
+- UPS: APC 1100VA (3-4 hour backup)
+- Internet: 100Mbps fiber + 4G hotspot backup
+
+### Architecture Overview
+
+```
+Internet (Dynamic IP)
+   │
+   └─ Dynamic DNS (afraid.org / No-IP)
+        │
+        └─ Home Router
+             │
+             ├─ Port Forwarding (80, 443, 22)
+             │
+             └─ Home Server (Static Local IP)
+                  │
+                  └─ Ubuntu Server 22.04
+                       │
+                       ├─ Nginx (TLS Termination)
+                       ├─ Kubernetes (k3s)
+                       ├─ Docker Services
+                       ├─ PostgreSQL
+                       ├─ Redis
+                       ├─ RabbitMQ
+                       └─ MinIO
+```
+
+### Part 1: Hardware Preparation
+
+#### Laptop Specific Setup
+
+This section covers critical configurations to convert a laptop into a stable, server-grade system. These are production-tested settings that prevent SSH disconnections, black screens, and ACPI errors.
+
+#### 1. Disable All Sleep and Suspend (Mandatory)
+
+1. Mask all sleep targets
+
+    ```bash
+    sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target power-save.target
+    ```
+
+2. Verify masking
+
+    ```bash
+    systemctl status sleep.target
+    ```
+
+    Expected output: masked (dead)
+
+#### 2. Configure Lid and Power Button Behavior
+
+1. Edit logind configuration
+
+    ```bash
+    sudo nano /etc/systemd/logind.conf
+    ```
+
+2. Set exact configuration
+
+    ```ini
+    HandlePowerKey=reboot
+    HandleSuspendKey=ignore
+    HandleHibernateKey=ignore
+    HandleLidSwitch=ignore
+    HandleLidSwitchExternalPower=ignore
+    HandleLidSwitchDocked=ignore
+    PowerKeyIgnoreInhibited=no
+    ```
+
+    What this achieves:
+    - Power button triggers clean reboot
+    - Lid close is completely ignored
+    - No accidental suspend
+    - Fixes ACPI "no installed handler" error
+
+3. Restart logind service
+
+    ```bash
+    sudo systemctl restart systemd-logind
+    ```
+
+    Warning: This may briefly disconnect SSH sessions.
+
+4. Verify configuration
+
+    ```bash
+    loginctl show-logind | grep HandleLidSwitch
+    ```
+
+    Expected output:
+    ```
+    HandleLidSwitch=ignore
+    HandleLidSwitchExternalPower=ignore
+    HandleLidSwitchDocked=ignore
+    ```
+
+#### 3. Fix ACPI and Black Screen Issues
+
+1. Force legacy sleep model
+
+    ```bash
+    sudo nano /etc/default/grub
+    ```
+
+2. Update GRUB command line
+
+    Find the line starting with `GRUB_CMDLINE_LINUX_DEFAULT` and change to:
+
+    ```ini
+    GRUB_CMDLINE_LINUX_DEFAULT="quiet splash acpi=force button.lid_init_state=open mem_sleep_default=deep"
+    ```
+
+3. Apply GRUB changes
+
+    ```bash
+    sudo update-grub
+    sudo reboot
+    ```
+
+4. Verify sleep mode
+
+    ```bash
+    cat /sys/power/mem_sleep
+    ```
+
+    Expected output: `[deep]`
+
+#### 4. Fix Intel GPU Freeze (Black Screen Prevention)
+
+1. Create Intel GPU configuration
+
+    ```bash
+    sudo tee /etc/modprobe.d/i915.conf <<EOF
+    options i915 enable_dc=0 enable_fbc=0
+    EOF
+    ```
+
+2. Reboot system
+
+    ```bash
+    sudo reboot
+    ```
+
+#### 5. Disable WiFi Power Saving
+
+WiFi power saving causes SSH disconnections and network instability.
+
+1. Create NetworkManager configuration
+
+    ```bash
+    sudo tee /etc/NetworkManager/conf.d/wifi-powersave.conf <<EOF
+    [connection]
+    wifi.powersave = 2
+    EOF
+    ```
+
+2. Restart NetworkManager
+
+    ```bash
+    sudo systemctl restart NetworkManager
+    ```
+
+3. Disable at kernel level (extra safety)
+
+    Find WiFi interface:
+
+    ```bash
+    iw dev
+    ```
+
+    Disable power saving (replace wlp2s0 with your interface):
+
+    ```bash
+    sudo iw dev wlp2s0 set power_save off
+    ```
+
+#### 6. Configure SSH Keep-Alive
+
+1. Edit SSH daemon configuration
+
+    ```bash
+    sudo nano /etc/ssh/sshd_config
+    ```
+
+2. Add keep-alive settings
+
+    ```ini
+    ClientAliveInterval 30
+    ClientAliveCountMax 3
+    ```
+
+3. Restart SSH service
+
+    ```bash
+    sudo systemctl restart ssh
+    ```
+
+#### 7. Enable Emergency Kernel Reboot
+
+If system hangs, you can force reboot without power cycling.
+
+1. Enable SysRq
+
+    ```bash
+    sudo tee /etc/sysctl.d/99-sysrq.conf <<EOF
+    kernel.sysrq = 1
+    EOF
+    ```
+
+2. Apply changes
+
+    ```bash
+    sudo sysctl -p
+    ```
+
+3. Emergency reboot shortcut
+
+    If system freezes: `Alt + SysRq + B`
+
+    This triggers immediate kernel reboot.
+
+#### 8. Use Ethernet Connection
+
+Important: Laptop WiFi is not 24/7 server-grade. Always use Ethernet for:
+- Stable connectivity
+- No power saving issues
+- Predictable network behavior
+- Better performance
+
+#### 9. Verify Laptop Server Configuration
+
+Run verification checklist:
+
+```bash
+# Check logind settings
+loginctl show-logind | grep Handle
+
+# Check sleep targets are masked
+systemctl status sleep.target
+
+# Check ACPI logs
+journalctl -b | grep -i acpi
+
+# Check WiFi power save
+iw dev wlp2s0 get power_save
+
+# Check SSH keep-alive
+sudo sshd -T | grep ClientAlive
+```
+
+Expected results:
+- All Handle* settings show "ignore" or "reboot"
+- sleep.target shows "masked"
+- No ACPI errors in logs
+- WiFi power_save shows "off"
+- SSH ClientAlive settings present
+
+#### 10. Final Laptop Server Behavior
+
+After completing these steps:
+
+| Action | Result |
+| ------ | ------ |
+| Close lid | System keeps running |
+| Press power button | Clean reboot |
+| SSH idle for hours | Connection stays alive |
+| Open lid | Screen wakes (optional) |
+| System hang | Alt+SysRq+B forces reboot |
+
+Important Notes:
+- Keep laptop on well-ventilated surface
+- Never run inside closed bag
+- Monitor temperatures with `sensors` or `htop`
+- External monitor recommended for setup only
+- Lid should remain closed during operation
+
+### Part 2: Ubuntu Server Installation
+
+1. Download Ubuntu Server 22.04 LTS
+
+    Visit: https://ubuntu.com/download/server
+
+    Download the ISO (approximately 2GB)
+
+2. Create bootable USB
+
+    **On macOS:**
+
+    ```bash
+    # Find USB device
+    diskutil list
+
+    # Unmount USB (replace diskN with your disk)
+    diskutil unmountDisk /dev/diskN
+
+    # Write ISO to USB
+    sudo dd if=ubuntu-22.04-live-server-amd64.iso of=/dev/rdiskN bs=1m
+    ```
+
+    **On Windows:**
+    - Use Rufus: https://rufus.ie/
+    - Select Ubuntu Server ISO
+    - Click Start
+
+    **On Linux:**
+
+    ```bash
+    # Find USB device
+    lsblk
+
+    # Write ISO (replace sdX with your device)
+    sudo dd if=ubuntu-22.04-live-server-amd64.iso of=/dev/sdX bs=4M status=progress
+    sudo sync
+    ```
+
+3. Boot from USB
+
+    - Insert USB into laptop/desktop
+    - Restart and press F2/F12/Delete (varies by manufacturer)
+    - Select USB boot option
+
+4. Install Ubuntu Server
+
+    Follow installation wizard:
+
+    - Language: English
+    - Keyboard: Your layout
+    - Network: Configure Ethernet (DHCP for now)
+    - Storage: Use entire disk
+    - Profile Setup:
+      - Name: Your name
+      - Server name: homeserver
+      - Username: Choose username
+      - Password: Strong password
+    - SSH Setup: Install OpenSSH server
+    - Featured Server Snaps: Skip for now
+
+5. Complete installation and reboot
+
+    Remove USB when prompted, then:
+
+    ```bash
+    sudo reboot
+    ```
+
+### Part 3: Initial Server Configuration
+
+1. Login via SSH from another computer
+
+    Find server IP:
+
+    ```bash
+    ip addr show
+    ```
+
+    From another computer:
+
+    ```bash
+    ssh username@SERVER_IP
+    ```
+
+2. Update system
+
+    ```bash
+    sudo apt update
+    sudo apt upgrade -y
+    ```
+
+3. Install essential packages
+
+    ```bash
+    sudo apt install -y \
+      curl \
+      wget \
+      git \
+      htop \
+      net-tools \
+      vim \
+      ca-certificates \
+      gnupg \
+      lsb-release \
+      ufw \
+      fail2ban
+    ```
+
+4. Configure firewall
+
+    ```bash
+    # Allow SSH
+    sudo ufw allow 22/tcp
+
+    # Allow HTTP/HTTPS
+    sudo ufw allow 80/tcp
+    sudo ufw allow 443/tcp
+
+    # Enable firewall
+    sudo ufw enable
+
+    # Check status
+    sudo ufw status
+    ```
+
+5. Configure Fail2Ban (SSH protection)
+
+    ```bash
+    sudo systemctl enable fail2ban
+    sudo systemctl start fail2ban
+    ```
+
+6. Set static local IP
+
+    Find network interface name:
+
+    ```bash
+    ip addr show
+    ```
+
+    Edit netplan configuration:
+
+    ```bash
+    sudo vi /etc/netplan/00-installer-config.yaml
+    ```
+
+    Configure static IP:
+
+    ```yaml
+    network:
+      version: 2
+      renderer: networkd
+      ethernets:
+        enp0s3:  # Your interface name
+          dhcp4: no
+          addresses:
+            - 192.168.1.100/24  # Choose available IP
+          routes:
+            - to: default
+              via: 192.168.1.1  # Your router IP
+          nameservers:
+            addresses:
+              - 8.8.8.8
+              - 8.8.4.4
+    ```
+
+    Apply configuration:
+
+    ```bash
+    sudo netplan apply
+    ```
+
+7. Configure SSH key authentication (more secure)
+
+    On your local computer:
+
+    ```bash
+    # Generate SSH key if you don't have one
+    ssh-keygen -t ed25519 -C "your_email@example.com"
+
+    # Copy public key to server
+    ssh-copy-id username@192.168.1.100
+    ```
+
+    On server, disable password authentication:
+
+    ```bash
+    sudo vi /etc/ssh/sshd_config
+    ```
+
+    Set:
+
+    ```bash
+    PasswordAuthentication no
+    PubkeyAuthentication yes
+    ```
+
+    Restart SSH:
+
+    ```bash
+    sudo systemctl restart sshd
+    ```
+
+### Part 4: Network Configuration
+
+This section covers network setup for home server with static IP from ISP.
+
+#### 1. Static IP from Internet Service Provider
+
+For production home server setup, obtain a static IP from your ISP. This eliminates dynamic DNS complications and provides stable access.
+
+**Benefits of Static IP:**
+- No dynamic DNS required
+- Consistent domain resolution
+- More reliable for production
+- Easier certificate management
+- Professional setup
+
+**Cost:** Usually $5-15/month additional to broadband plan
+
+Contact your ISP to purchase static IP service.
+
+#### 2. Domain Name Setup
+
+Purchase domain from Namecheap for easy SSL certificate automation.
+
+**Why Namecheap:**
+- Excellent API for automation
+- Works perfectly with acme.sh
+- Affordable pricing (~$10-15/year)
+- Easy DNS management
+- Good support
+
+1. Purchase domain
+
+    Visit: https://www.namecheap.com
+
+2. Configure DNS A records
+
+    Point domain to your static IP:
+
+    | Record Type | Host | Value | TTL |
+    | ----------- | ---- | ----- | --- |
+    | A | @ | YOUR_STATIC_IP | 300 |
+    | A | * | YOUR_STATIC_IP | 300 |
+
+    The wildcard (*) record covers all subdomains.
+
+3. Enable Namecheap API
+
+    - Login to Namecheap
+    - Go to: Profile → Tools → API Access
+    - Enable API Access
+    - Whitelist your server's static IP
+    - Note down API Key and Username
+
+#### 3. Router Port Forwarding
+
+Configure your router to forward traffic to home server.
+
+1. Access router admin panel
+
+    For Airtel routers, default is usually:
+    ```
+    http://192.168.1.1
+    ```
+
+2. Change router admin port (important)
+
+    - Navigate to: Advanced → Web Management
+    - Change admin port from 80 to 81
+    - This frees port 80 for Nginx
+    - Router admin will be accessible at: http://192.168.1.1:81
+
+3. Set static DHCP reservation for server
+
+    - Navigate to: Network → DHCP
+    - Find your server's MAC address
+    - Reserve IP: 192.168.1.200
+    - This ensures server always gets same local IP
+
+4. Configure port forwarding
+
+    Navigate to: Advanced → NAT → Port Forwarding
+
+    Add these rules:
+
+    | Service | External Port | Internal IP | Internal Port | Protocol |
+    | ------- | ------------- | ----------- | ------------- | -------- |
+    | HTTP | 80 | 192.168.1.200 | 80 | TCP |
+    | HTTPS | 443 | 192.168.1.200 | 443 | TCP |
+    | SSH | 22 | 192.168.1.200 | 22 | TCP |
+
+    **Security Note:** Only forward SSH (port 22) if you need external SSH access. Consider using VPN instead.
+
+5. Save and apply configuration
+
+#### 4. Server Network Configuration
+
+1. Set static local IP on server
+
+    Find network interface:
+
+    ```bash
+    ip addr show
+    ```
+
+2. Edit netplan configuration
+
+    ```bash
+    sudo nano /etc/netplan/00-installer-config.yaml
+    ```
+
+3. Configure static IP
+
+    ```yaml
+    network:
+      version: 2
+      renderer: networkd
+      ethernets:
+        enp0s3:  # Your interface name (use from ip addr show)
+          dhcp4: no
+          addresses:
+            - 192.168.1.200/24  # Same as DHCP reservation in router
+          routes:
+            - to: default
+              via: 192.168.1.1  # Your router IP
+          nameservers:
+            addresses:
+              - 8.8.8.8
+              - 8.8.4.4
+    ```
+
+4. Apply network configuration
+
+    ```bash
+    sudo netplan apply
+    ```
+
+5. Verify network connectivity
+
+    ```bash
+    ping -c 4 8.8.8.8
+    ping -c 4 google.com
+    ```
+
+#### 5. Firewall Configuration
+
+1. Install UFW (if not already installed)
+
+    ```bash
+    sudo apt install ufw
+    ```
+
+2. Configure firewall rules
+
+    ```bash
+    # Allow SSH
+    sudo ufw allow 22/tcp
+
+    # Allow HTTP/HTTPS
+    sudo ufw allow 80/tcp
+    sudo ufw allow 443/tcp
+
+    # Enable firewall
+    sudo ufw enable
+
+    # Check status
+    sudo ufw status verbose
+    ```
+
+3. Install Fail2Ban for SSH protection
+
+    ```bash
+    sudo apt install fail2ban
+    sudo systemctl enable fail2ban
+    sudo systemctl start fail2ban
+    ```
+
+#### 6. Verify Network Setup
+
+Run verification commands:
+
+```bash
+# Check static IP
+ip addr show
+
+# Check default route
+ip route show
+
+# Check DNS resolution
+nslookup google.com
+
+# Check internet connectivity
+ping -c 4 8.8.8.8
+
+# Check domain resolves to your IP
+nslookup yourdomain.com
+
+# Check ports are listening
+sudo ss -tulnp | grep -E ':(80|443|22)'
+
+# Check firewall status
+sudo ufw status
+```
+
+Expected results:
+- Server has static IP 192.168.1.200
+- Can ping internet
+- Domain resolves to your static IP
+- Ports 80, 443, 22 are allowed in firewall
+- Fail2Ban is active
+
+#### 7. Optional: Router Admin Access via Nginx
+
+You can access your router admin panel via subdomain for convenience.
+
+This is already covered in router_admin_nginx.md (if you want to set this up).
+
+**Security Warning:** Only do this with proper IP whitelisting or VPN access.
+
+### SSL Certificate Setup
+
+SSL certificate setup with acme.sh is covered in detail in:
+- [Nginx HTTPS Setup Guide](nginx_https.md)
+
+That guide includes:
+- acme.sh installation
+- Namecheap API configuration
+- Wildcard certificate issuance
+- Automatic renewal setup
+- Nginx SSL configuration
+
+Follow that guide after completing network setup.
+
+### Part 6: UPS Configuration
+
+1. Connect UPS
+
+    - Connect server to UPS
+    - Connect UPS to power
+    - Connect UPS to server via USB
+
+2. Install NUT (Network UPS Tools)
+
+    ```bash
+    sudo apt install nut
+    ```
+
+3. Find UPS device
+
+    ```bash
+    sudo nut-scanner -U
+    ```
+
+4. Configure UPS driver
+
+    ```bash
+    sudo vi /etc/nut/ups.conf
+    ```
+
+    Add:
+
+    ```bash
+    [apc]
+        driver = usbhid-ups
+        port = auto
+        desc = "APC UPS"
+    ```
+
+5. Configure NUT daemon
+
+    ```bash
+    sudo vi /etc/nut/nut.conf
+    ```
+
+    Set:
+
+    ```bash
+    MODE=standalone
+    ```
+
+6. Configure upsd
+
+    ```bash
+    sudo vi /etc/nut/upsd.conf
+    ```
+
+    Add:
+
+    ```bash
+    LISTEN 127.0.0.1 3493
+    ```
+
+7. Configure users
+
+    ```bash
+    sudo vi /etc/nut/upsd.users
+    ```
+
+    Add:
+
+    ```bash
+    [upsmon]
+        password = mypassword
+        upsmon master
+    ```
+
+8. Configure monitoring
+
+    ```bash
+    sudo vi /etc/nut/upsmon.conf
+    ```
+
+    Add:
+
+    ```bash
+    MONITOR apc@localhost 1 upsmon mypassword master
+    SHUTDOWNCMD "/sbin/shutdown -h +0"
+    NOTIFYCMD /usr/sbin/upssched
+    POLLFREQ 5
+    ```
+
+9. Start NUT services
+
+    ```bash
+    sudo systemctl start nut-server
+    sudo systemctl start nut-monitor
+    sudo systemctl enable nut-server
+    sudo systemctl enable nut-monitor
+    ```
+
+10. Check UPS status
+
+    ```bash
+    upsc apc@localhost
+    ```
+
+### Part 7: Backup Internet Connection
+
+Configure automatic failover to mobile hotspot when primary internet fails.
+
+1. Install usb-modeswitch (for USB modems)
+
+    ```bash
+    sudo apt install usb-modeswitch usb-modeswitch-data
+    ```
+
+2. Create connection check script
+
+    ```bash
+    sudo vi /usr/local/bin/check-internet.sh
+    ```
+
+    Add:
+
+    ```bash
+    #!/bin/bash
+
+    # Primary connection check
+    ping -c 3 8.8.8.8 > /dev/null 2>&1
+
+    if [ $? -ne 0 ]; then
+        echo "Primary connection down, switching to backup..."
+        
+        # Enable USB tethering or hotspot
+        # This depends on your specific setup
+        
+        # Send alert
+        curl -s -X POST "https://api.telegram.org/botYOUR_BOT_TOKEN/sendMessage" \
+            -d "chat_id=YOUR_CHAT_ID" \
+            -d "text=Home Server: Switched to backup internet"
+    fi
+    ```
+
+    Make executable:
+
+    ```bash
+    sudo chmod +x /usr/local/bin/check-internet.sh
+    ```
+
+3. Add to cron
+
+    ```bash
+    crontab -e
+    ```
+
+    Add:
+
+    ```bash
+    */5 * * * * /usr/local/bin/check-internet.sh
+    ```
+
+### Part 8: Monitoring Setup
+
+1. Install monitoring tools
+
+    ```bash
+    # System monitoring
+    sudo apt install htop iotop nethogs
+
+    # Disk monitoring
+    sudo apt install smartmontools
+    sudo systemctl enable smartd
+    ```
+
+2. Setup email alerts (using Mailjet)
+
+    ```bash
+    sudo apt install python3-pip
+    pip3 install mailjet-rest
+    ```
+
+3. Create alert script
+
+    ```bash
+    sudo vi /usr/local/bin/system-alert.sh
+    ```
+
+    Add:
+
+    ```bash
+    #!/bin/bash
+
+    # Check disk space
+    DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
+
+    if [ $DISK_USAGE -gt 80 ]; then
+        python3 <<END
+    from mailjet_rest import Client
+    api_key = 'YOUR_API_KEY'
+    api_secret = 'YOUR_API_SECRET'
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    data = {
+        'Messages': [{
+            "From": {"Email": "alerts@yourdomain.com"},
+            "To": [{"Email": "your@email.com"}],
+            "Subject": "Home Server Alert: High Disk Usage",
+            "TextPart": "Disk usage is at ${DISK_USAGE}%"
+        }]
+    }
+    mailjet.send.create(data=data)
+    END
+    fi
+    ```
+
+4. Add monitoring to cron
+
+    ```bash
+    crontab -e
+    ```
+
+    Add:
+
+    ```bash
+    0 * * * * /usr/local/bin/system-alert.sh
+    ```
+
+### Part 9: Automated Backups
+
+1. Create backup directory
+
+    ```bash
+    sudo mkdir -p /backup/docker-volumes
+    sudo mkdir -p /backup/databases
+    sudo mkdir -p /backup/configs
+    ```
+
+2. Create backup script
+
+    ```bash
+    sudo vi /usr/local/bin/backup-all.sh
+    ```
+
+    Add:
+
+    ```bash
+    #!/bin/bash
+
+    DATE=$(date +%Y%m%d-%H%M%S)
+    BACKUP_DIR="/backup"
+
+    # Backup Docker volumes
+    docker run --rm \
+        -v /var/lib/docker/volumes:/source:ro \
+        -v $BACKUP_DIR/docker-volumes:/backup \
+        ubuntu tar czf /backup/volumes-$DATE.tar.gz -C /source .
+
+    # Backup PostgreSQL
+    docker exec postgres pg_dumpall -U postgres | gzip > $BACKUP_DIR/databases/postgres-$DATE.sql.gz
+
+    # Backup configs
+    tar czf $BACKUP_DIR/configs/etc-$DATE.tar.gz /etc/nginx /etc/default
+
+    # Keep only last 7 days
+    find $BACKUP_DIR -type f -mtime +7 -delete
+
+    echo "Backup completed: $DATE"
+    ```
+
+    Make executable:
+
+    ```bash
+    sudo chmod +x /usr/local/bin/backup-all.sh
+    ```
+
+3. Schedule daily backups
+
+    ```bash
+    sudo crontab -e
+    ```
+
+    Add:
+
+    ```bash
+    0 2 * * * /usr/local/bin/backup-all.sh >> /var/log/backup.log 2>&1
+    ```
+
+### Part 10: Remote Access Setup
+
+1. Install and configure Tailscale VPN (recommended)
+
+    ```bash
+    curl -fsSL https://tailscale.com/install.sh | sh
+    sudo tailscale up
+    ```
+
+    This provides secure remote access without exposing SSH to internet.
+
+2. Alternative: Configure SSH for external access
+
+    If you forwarded port 22, harden SSH:
+
+    ```bash
+    sudo vi /etc/ssh/sshd_config
+    ```
+
+    Set:
+
+    ```bash
+    Port 2222  # Change from 22
+    PermitRootLogin no
+    PasswordAuthentication no
+    MaxAuthTries 3
+    AllowUsers yourusername
+    ```
+
+    Update port forwarding in router to port 2222.
+
+    Restart SSH:
+
+    ```bash
+    sudo systemctl restart sshd
+    ```
+
+### Part 11: Install Core Services
+
+Now that your home server is configured, proceed with installing services:
+
+1. [Docker Installation](docker_installation.md)
+2. [Nginx Basic Setup](nginx.md)
+3. [Nginx HTTPS Setup](nginx_https.md)
+4. [Kubernetes with Portainer](kubernetes_with_portainer/deployment.md)
+5. Other services as needed
+
+### Common Issues and Fixes
+
+1. Server not accessible from internet
+
+    Cause: Port forwarding not working or ISP blocking ports
+
+    Fix:
+
+    - Verify port forwarding in router
+    - Check if ISP blocks ports 80/443
+    - Test with online port checker
+    - Consider using Cloudflare Tunnel as alternative
+
+2. Dynamic DNS not updating
+
+    Cause: Update script failing or service down
+
+    Fix:
+
+    ```bash
+    # Test update script manually
+    /usr/local/bin/update-ddns.sh
+
+    # Check cron logs
+    grep CRON /var/log/syslog
+    ```
+
+3. UPS not detected
+
+    Cause: Driver issues or USB connection
+
+    Fix:
+
+    ```bash
+    # List USB devices
+    lsusb
+
+    # Check NUT logs
+    sudo journalctl -u nut-server
+    ```
+
+4. Laptop overheating
+
+    Cause: Poor ventilation or dust
+
+    Fix:
+
+    - Clean laptop vents
+    - Use cooling pad
+    - Monitor temperature:
+      ```bash
+      sudo apt install lm-sensors
+      sensors
+      ```
+
+5. High disk usage
+
+    Cause: Docker logs or old backups
+
+    Fix:
+
+    ```bash
+    # Clean Docker logs
+    docker system prune -a
+
+    # Clean old backups
+    find /backup -type f -mtime +30 -delete
+    ```
+
+### Performance Optimization
+
+1. Disable unnecessary services
+
+    ```bash
+    sudo systemctl disable bluetooth
+    sudo systemctl disable cups
+    ```
+
+2. Configure swap for low RAM
+
+    ```bash
+    sudo fallocate -l 4G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+    ```
+
+3. Enable automatic security updates
+
+    ```bash
+    sudo apt install unattended-upgrades
+    sudo dpkg-reconfigure -plow unattended-upgrades
+    ```
+
+### Security Best Practices
+
+1. Regular updates
+
+    ```bash
+    sudo apt update && sudo apt upgrade -y
+    ```
+
+2. Monitor logs
+
+    ```bash
+    sudo tail -f /var/log/auth.log
+    ```
+
+3. Check open ports
+
+    ```bash
+    sudo ss -tulnp
+    ```
+
+4. Review firewall rules
+
+    ```bash
+    sudo ufw status verbose
+    ```
+
+5. Check for unauthorized access
+
+    ```bash
+    sudo last
+    sudo lastb
+    ```
+
+### Maintenance Checklist
+
+**Daily:**
+- Check system is accessible
+- Verify services are running
+
+**Weekly:**
+- Review system logs
+- Check disk space
+- Test backups
+
+**Monthly:**
+- Update system packages
+- Review firewall logs
+- Clean Docker images
+- Test UPS failover
+- Verify backup restoration
+
+**Quarterly:**
+- Update all service configurations
+- Review and update security policies
+- Test disaster recovery procedures
+- Clean hardware (dust removal)
+
+### Final Verification Checklist
+
+Run these commands to verify home server setup:
+
+```bash
+# Check static IP
+ip addr show
+
+# Check internet connectivity
+ping -c 4 8.8.8.8
+
+# Check DNS resolution
+nslookup google.com
+
+# Check firewall
+sudo ufw status
+
+# Check SSH service
+sudo systemctl status sshd
+
+# Check UPS status
+upsc apc@localhost
+
+# Check disk space
+df -h
+
+# Check memory
+free -h
+
+# Check running services
+sudo systemctl list-units --type=service --state=running
+```
+
+### What This Setup Provides
+
+After completing this guide, you will have:
+
+1. Production-ready home server
+2. Static local IP address
+3. Dynamic DNS for domain access
+4. Port forwarding configured
+5. UPS power backup
+6. Backup internet failover
+7. Remote access via VPN
+8. Automated monitoring and alerts
+9. Automated backups
+10. Security hardening
+11. Maintenance automation
+
+### Cost Breakdown
+
+**One-time Costs:**
+- Old laptop/desktop: $0-300 (repurpose existing)
+- UPS: $80-150
+- External HDD for backup: $50-80
+- Total: $130-530
+
+**Monthly Costs:**
+- Electricity: ~$5-10 (depends on usage)
+- Domain (optional): ~$1-2/month
+- Backup mobile data: $0 (if included in plan)
+- Total: ~$5-12/month
+
+**Savings vs Cloud:**
+- EC2 t2.small: ~$15/month
+- Hostinger VPS: ~$10/month
+- **Home Server: ~$7/month**
+- **Annual Savings: $50-100**
+
+### Next Steps
+
+After completing home server setup:
+
+1. Install Docker and Docker Compose
+2. Set up Nginx with HTTPS
+3. Configure Kubernetes cluster
+4. Deploy your applications
+5. Set up monitoring dashboards
+6. Configure automated deployments
+
+Proceed to: [Docker Installation Guide](docker_installation.md)
+
+### Support and Community
+
+For issues and questions:
+- Check server logs: `sudo journalctl -xe`
+- Review service status: `sudo systemctl status`
+- Monitor resources: `htop`
+- Network debugging: `sudo netstat -tulnp`
+
+### My Home Server Stats
+
+Current uptime and performance:
+- Uptime: 97.8% (2025-2026 average)
+- Average response time: <100ms
+- Power consumption: ~30W
+- Monthly cost: ~$7
+- Projects hosted: 15+
+- Concurrent users: 50-100
+- Total requests/day: ~5000
+
+Live at: https://arpansahu.space
