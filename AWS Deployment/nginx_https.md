@@ -615,6 +615,7 @@ Internet (HTTPS)
 | Portainer    | portainer.arpansahu.space       | https://127.0.0.1:9443 |
 | PgAdmin      | pgadmin.arpansahu.space         | http://127.0.0.1:5050  |
 | RabbitMQ     | rabbitmq.arpansahu.space        | http://127.0.0.1:15672 |
+| Kafka AKHQ   | kafka.arpansahu.space           | http://127.0.0.1:8086  |
 | PostgreSQL   | postgres.arpansahu.space        | tcp://127.0.0.1:5432   |
 
 Note: Portainer is the only service that uses HTTPS backend (9443).

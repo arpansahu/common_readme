@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  akhq:
+    image: tchiotludo/akhq:0.25.1
+    container_name: akhq
+    ports:
+      - "${AKHQ_PORT}:8080"
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            kafka-cluster:
+              properties:
+                bootstrap.servers: "kafka-kraft:${KAFKA_PORT}"
+                security.protocol: "SASL_SSL"
+                sasl.mechanism: "PLAIN"
+                sasl.jaas.config: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USER_USERNAME}" password="${KAFKA_USER_PASSWORD}";'
+                ssl.truststore.location: "/ssl/kafka.truststore.jks"
+                ssl.truststore.password: "${SSL_TRUSTSTORE_PASSWORD}"
+                ssl.endpoint.identification.algorithm: ""
+          
+          security:
+            default-group: no-roles
+            groups:
+              admin:
+                - role: node-admin
+                - role: topic-admin
+                - role: topic-data-admin
+                - role: consumer-group-admin
+                - role: connect-cluster-reader
+                - role: connector-admin
+                - role: schema-admin
+                - role: acl-reader
+                - role: ksqldb-admin
+              reader:
+                - role: topic-reader
+                - role: consumer-group-reader
+                - role: connect-cluster-reader
+                - role: schema-reader
+            
+            roles:
+              topic-reader:
+                - resources: [ "TOPIC", "TOPIC_DATA" ]
+                  actions: [ "READ" ]
+                - resources: [ "TOPIC" ]
+                  actions: [ "READ_CONFIG" ]
+              topic-admin:
+                - resources: [ "TOPIC", "TOPIC_DATA" ]
+                  actions: [ "READ", "CREATE", "DELETE" ]
+                - resources: [ "TOPIC" ]
+                  actions: [ "UPDATE", "READ_CONFIG", "ALTER_CONFIG" ]
+              topic-data-admin:
+                - resources: [ "TOPIC_DATA" ]
+                  actions: [ "READ", "CREATE", "DELETE" ]
+                - resources: [ "TOPIC" ]
+                  actions: [ "READ" ]
+              consumer-group-reader:
+                - resources: [ "CONSUMER_GROUP" ]
+                  actions: [ "READ" ]
+              consumer-group-admin:
+                - resources: [ "CONSUMER_GROUP" ]
+                  actions: [ "READ", "UPDATE_OFFSET", "DELETE", "DELETE_OFFSET" ]
+              connect-cluster-reader:
+                - resources: [ "CONNECT_CLUSTER" ]
+                  actions: [ "READ" ]
+              connector-admin:
+                - resources: [ "CONNECTOR" ]
+                  actions: [ "READ", "CREATE", "DELETE", "UPDATE_STATE" ]
+              schema-reader:
+                - resources: [ "SCHEMA" ]
+                  actions: [ "READ" ]
+              schema-admin:
+                - resources: [ "SCHEMA" ]
+                  actions: [ "READ", "CREATE", "UPDATE", "DELETE", "DELETE_VERSION" ]
+              node-admin:
+                - resources: [ "NODE" ]
+                  actions: [ "READ", "READ_CONFIG", "ALTER_CONFIG" ]
+              acl-reader:
+                - resources: [ "ACL" ]
+                  actions: [ "READ" ]
+              ksqldb-admin:
+                - resources: [ "KSQLDB" ]
+                  actions: [ "READ", "EXECUTE" ]
+            
+            basic-auth:
+              - username: ${AKHQ_ADMIN_USERNAME}
+                password: "$$2a$$12$$oaejVH5xvyQx3n.gvVhEPuD3dZfvFJqf6z7fVkFGhqrIVI2LZh1Nu"
+                passwordHash: BCRYPT
+                groups:
+                  - admin
+              - username: ${AKHQ_USER_USERNAME}
+                password: "$$2a$$12$$ZjGU.ztZNnZzPqGPBdHLwOn5CXN4W9g6rjVWoJTF.z/QF7SJA8F1K"
+                passwordHash: BCRYPT
+                groups:
+                  - reader
+        
+        micronaut:
+          application:
+            name: akhq
+          security:
+            enabled: true
+            authentication: cookie
+            endpoints:
+              login:
+                path: "/login"
+              logout:
+                path: "/logout"
+                get-allowed: true
+            token:
+              jwt:
+                enabled: true
+                signatures:
+                  secret:
+                    generator:
+                      secret: "pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!pleasechangeme!"
+            redirect:
+              login-success: "/ui"
+              login-failure: "/ui/login/failed"
+              forbidden:
+                url: "/ui/login/forbidden"
+              unauthorized:
+                url: "/ui/login/unauthorized"
+              logout: "/ui"
+            intercept-url-map:
+              - pattern: "/ui/**"
+                access:
+                  - "isAnonymous()"
+              - pattern: "/static/**"
+                access:
+                  - "isAnonymous()"
+              - pattern: "/login"
+                access:
+                  - "isAnonymous()"
+              - pattern: "/logout"
+                access:
+                  - "isAuthenticated()"
+              - pattern: "/**"
+                access:
+                  - "isAuthenticated()"
+    volumes:
+      - ./ssl/kafka.truststore.jks:/ssl/kafka.truststore.jks:ro
+    networks:
+      - kafka-network
+    restart: unless-stopped
+
+networks:
+  kafka-network:
+    external: true
+    name: kafka-deployment_kafka-network

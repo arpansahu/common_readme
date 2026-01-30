@@ -58,3 +58,8 @@ tmtagsHistory
 socialauth
 
 **/migrations/**
+
+creds.txt
+
+venv/
+ssh_helper.sh

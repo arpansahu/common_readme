@@ -418,6 +418,7 @@ After following this guide, you will have:
 | Portainer    | portainer.arpansahu.me          | 9998         |
 | PgAdmin      | pgadmin.arpansahu.me            | 5050         |
 | RabbitMQ     | rabbitmq.arpansahu.me           | 15672        |
+| Kafka AKHQ   | kafka.arpansahu.me              | 8086         |
 
 ### Next Steps
 

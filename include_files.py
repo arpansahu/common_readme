@@ -15,6 +15,8 @@ include_files = {
     "README of Redis Commander Setup": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/RedisCommander.md",
     "README of Minio Server Setup": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/Minio.md",
     "README of RabbitMQ Server Setup": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/Rabbitmq.md",
+    "README of Kafka Server Setup": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kafka/Kafka.md",
+    "README of AKHQ UI Setup": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/kafka/AKHQ.md",
     "README of Intro": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/Intro.md",
     "HOME SERVER SETUP": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/home_server_setup.md",
     "SSH GUACAMOLE SETUP": "https://raw.githubusercontent.com/arpansahu/common_readme/main/AWS%20Deployment/ssh_guacamole.md",

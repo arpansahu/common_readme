@@ -193,8 +193,10 @@ All deployment options use the same software stack:
 - PostgreSQL 16 with SCRAM-SHA-256
 - Redis for caching
 - RabbitMQ for message queuing
+- Kafka with KRaft mode for event streaming
 - MinIO for object storage
 - PgAdmin for database administration
+- AKHQ for Kafka management
 
 **DevOps Tools:**
 - Jenkins for CI/CD
@@ -217,14 +219,16 @@ This repository provides step-by-step guides for:
 5. [PostgreSQL Setup](Postgres.md)
 6. [Redis Commander](RedisCommander.md)
 7. [RabbitMQ](Rabbitmq.md)
-8. [Portainer](Portainer.md)
-9. [PgAdmin](Pgadmin.md)
-10. [MinIO Object Storage](Minio.md)
-11. [Jenkins CI/CD](Jenkins/Jenkins.md)
-12. [Harbor Private Registry](harbor/harbor.md)
-13. [Home Server Setup](home_server_setup.md) ← Complete laptop-to-server guide
-14. [SSH GUI Access (Guacamole)](ssh_guacamole.md) ← Browser-based SSH/RDP
-15. [Router Admin via Nginx](router_admin_nginx.md) ← Secure router management
+8. [Kafka with KRaft](kafka/Kafka.md)
+9. [AKHQ (Kafka UI)](kafka/AKHQ.md)
+10. [Portainer](Portainer.md)
+11. [PgAdmin](Pgadmin.md)
+12. [MinIO Object Storage](Minio.md)
+13. [Jenkins CI/CD](Jenkins/Jenkins.md)
+14. [Harbor Private Registry](harbor/harbor.md)
+15. [Home Server Setup](home_server_setup.md) ← Complete laptop-to-server guide
+16. [SSH GUI Access (Guacamole)](ssh_guacamole.md) ← Browser-based SSH/RDP
+17. [Router Admin via Nginx](router_admin_nginx.md) ← Secure router management
 
 ### Getting Started
 

@@ -1,6 +1,0 @@
-JAAS_USER=client1
-JAAS_PASSWORD=client1-secret
-
-JWT_SECRET_KEY=Gj2hFC+FD2VFsuTZal3/JAvN0Fl/KSnxCDNTntEL5PQ=
-your_password_BCRYPT=$2a$12$hKwQXCwRbsGKlnm.8kZoM.PdcYnXtkZCMxyV0MSvtTwdiP69ocE7C
-your_password_SHA=9e933a025f359bc7e3a3c687db60b60dc093a0b26683bd302385932adf14fd4b
