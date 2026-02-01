@@ -28,7 +28,18 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-echo -e "${YELLOW}Step 1: Installing K3s${NC}"
+echo -e "${YELLOW}Step 1: Installing kubectl${NC}"
+if command -v kubectl &> /dev/null; then
+    echo "kubectl already installed: $(kubectl version --client --short 2>/dev/null || kubectl version --client)"
+else
+    echo "Installing kubectl..."
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    rm kubectl
+    echo -e "${GREEN}kubectl installed successfully${NC}"
+fi
+
+echo -e "${YELLOW}Step 2: Installing K3s${NC}"
 if command -v k3s &> /dev/null; then
     echo "K3s already installed: $(k3s --version | head -n1)"
 else
@@ -41,7 +52,7 @@ else
     echo -e "${GREEN}K3s installed successfully${NC}"
 fi
 
-echo -e "${YELLOW}Step 2: Waiting for K3s to be ready${NC}"
+echo -e "${YELLOW}Step 3: Waiting for K3s to be ready${NC}"
 sleep 10
 until kubectl get nodes 2>/dev/null | grep -q "Ready"; do
     echo "Waiting for K3s..."
@@ -49,7 +60,7 @@ until kubectl get nodes 2>/dev/null | grep -q "Ready"; do
 done
 echo -e "${GREEN}K3s is ready${NC}"
 
-echo -e "${YELLOW}Step 3: Setting up kubeconfig for non-root user${NC}"
+echo -e "${YELLOW}Step 4: Setting up kubeconfig for non-root user${NC}"
 if [ -n "$SUDO_USER" ]; then
     USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
     mkdir -p "$USER_HOME/.kube"
@@ -59,10 +70,10 @@ if [ -n "$SUDO_USER" ]; then
     echo -e "${GREEN}Kubeconfig copied to $USER_HOME/.kube/config${NC}"
 fi
 
-echo -e "${YELLOW}Step 4: Creating Portainer Agent namespace${NC}"
+echo -e "${YELLOW}Step 5: Creating Portainer Agent namespace${NC}"
 kubectl create namespace ${PORTAINER_AGENT_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-echo -e "${YELLOW}Step 5: Deploying Portainer Agent${NC}"
+echo -e "${YELLOW}Step 6: Deploying Portainer Agent${NC}"
 
 # Create Portainer Agent deployment
 cat <<EOF | kubectl apply -f -

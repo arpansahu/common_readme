@@ -55,6 +55,13 @@ K3S_DISABLE_TRAEFIK=true
 
 ## Installation Details
 
+### kubectl Installation
+
+The `install.sh` script first installs kubectl if not already present:
+- Downloads latest stable kubectl binary
+- Installs to `/usr/local/bin/kubectl`
+- Skips if kubectl already exists
+
 ### K3s Installation
 
 The `install.sh` script:

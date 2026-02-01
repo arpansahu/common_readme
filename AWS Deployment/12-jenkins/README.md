@@ -5,10 +5,22 @@ Jenkins is an open-source automation server for continuous integration and deplo
 ### Quick Install
 
 ```bash
-cd "AWS Deployment/jenkins"
+cd "AWS Deployment/12-jenkins"
 chmod +x install.sh
 ./install.sh
 ```
+
+The install script automatically:
+- ✅ Installs Java 17
+- ✅ Installs Jenkins
+- ✅ Configures Docker permissions
+- ✅ Configures kubectl permissions (if kubectl already installed)
+- ✅ Sets up Jenkins user with proper access
+- ✅ Copies kubeconfig for Jenkins user (if Kubernetes is set up)
+
+**Note:** 
+- If you need Kubernetes deployments, install kubectl first using the Kubernetes setup docs.
+- For secrets management, use Jenkins Credentials (see `post_server_setup/jenkins_project_env/`).
 
 ### Installation Script
 
@@ -239,6 +251,6 @@ java -jar jenkins-cli.jar -s http://localhost:8080/ \
 
 ### Configuration Files
 
-- Installation script: [`install.sh`](./install.sh)
+- Installation script: [`install.sh`](./install.sh) - Includes automatic permissions setup
 - Nginx configuration: [`nginx.conf`](./nginx.conf)
 - Service file: `/lib/systemd/system/jenkins.service`
