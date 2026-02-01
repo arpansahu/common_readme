@@ -16,10 +16,9 @@ generate_build_job_xml() {
   <properties>
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
       <triggers>
-        <hudson.triggers.SCMTrigger>
-          <spec>H/5 * * * *</spec>
-          <ignorePostCommitHooks>false</ignorePostCommitHooks>
-        </hudson.triggers.SCMTrigger>
+        <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3.1">
+          <spec></spec>
+        </com.cloudbees.jenkins.GitHubPushTrigger>
       </triggers>
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
@@ -55,35 +54,29 @@ generate_deploy_job_xml() {
     local repo_url=$2
     local branch=${3:-main}
     local jenkinsfile_path=${4:-Jenkinsfile-deploy}
+    local build_job_name="${job_name}_build"
     
     cat <<EOF
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job@1436.vfa_244484591f">
   <actions/>
-  <description>Deployment pipeline for ${job_name} - Deploys application from Harbor registry</description>
+  <description>Deployment pipeline for ${job_name} - Deploys application from Harbor registry. Automatically triggered after successful build.</description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <hudson.model.ParametersDefinitionProperty>
-      <parameterDefinitions>
-        <hudson.model.StringParameterDefinition>
-          <name>IMAGE_TAG</name>
-          <description>Docker image tag to deploy (default: latest)</description>
-          <defaultValue>latest</defaultValue>
-          <trim>false</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.ChoiceParameterDefinition>
-          <name>ENVIRONMENT</name>
-          <description>Environment to deploy to</description>
-          <choices class="java.util.Arrays\$ArrayList">
-            <a class="string-array">
-              <string>prod</string>
-              <string>staging</string>
-              <string>dev</string>
-            </a>
-          </choices>
-        </hudson.model.ChoiceParameterDefinition>
-      </parameterDefinitions>
-    </hudson.model.ParametersDefinitionProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <jenkins.triggers.ReverseBuildTrigger>
+          <spec></spec>
+          <upstreamProjects>${build_job_name}</upstreamProjects>
+          <threshold>
+            <name>SUCCESS</name>
+            <ordinal>0</ordinal>
+            <color>BLUE</color>
+            <completeBuild>true</completeBuild>
+          </threshold>
+        </jenkins.triggers.ReverseBuildTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@3983.vb_b_c3d3c8c7d">
     <scm class="hudson.plugins.git.GitSCM" plugin="git@5.5.2">
@@ -142,10 +135,9 @@ generate_readme_job_xml() {
     </hudson.model.ParametersDefinitionProperty>
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
       <triggers>
-        <hudson.triggers.SCMTrigger>
-          <spec>H/5 * * * *</spec>
-          <ignorePostCommitHooks>false</ignorePostCommitHooks>
-        </hudson.triggers.SCMTrigger>
+        <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3.1">
+          <spec></spec>
+        </com.cloudbees.jenkins.GitHubPushTrigger>
       </triggers>
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>

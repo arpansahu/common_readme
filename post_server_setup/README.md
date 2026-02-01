@@ -55,8 +55,13 @@ See [jenkins_project_env/README.md](jenkins_project_env/README.md) for details.
 After setting up Jenkins on a new server, use these scripts to automatically create all necessary pipelines for your repositories. The scripts will:
 
 1. Create a pipeline for the `common_readme` repository (README management)
-2. Create build and deploy pipelines for all Django application repositories
-3. Configure SCM polling and proper credentials
+2. Create linked build and deploy pipelines for all Django application repositories
+3. Configure GitHub webhook triggers for build jobs
+4. Configure automatic deploy triggers after successful builds
+5. Setup secure credential management
+
+**Automated CI/CD Flow:**
+- Push code → Build (instant via webhook) → Deploy (auto on success) → Production
 
 ## Files
 
@@ -119,7 +124,23 @@ cp .env.jenkins.example .env.jenkins
 
 This creates **21 pipelines** (build + deploy for 10 projects + README management).
 
-### Step 3: Upload Environment Variables
+### Step 3: Setup GitHub Webhooks
+
+Configure webhooks for automatic builds (instead of polling):
+
+**For each repository:**
+1. Go to GitHub: **Repository → Settings → Webhooks**
+2. Click **Add webhook**
+3. Configure:
+   - **Payload URL:** `https://jenkins.arpansahu.space/github-webhook/`
+   - **Content type:** `application/json`
+   - **Events:** "Just the push event"
+   - **Active:** ✓ Checked
+4. Click **Add webhook**
+
+See [jenkins_pipeline_creator/README.md](jenkins_pipeline_creator/README.md#github-webhook-setup) for details.
+
+### Step 4: Upload Environment Variables
 
 Upload project `.env` files to Jenkins credentials:
 
@@ -136,11 +157,12 @@ cp .env.jenkins.example .env.jenkins
 
 Select project, paste `.env` content, and it's securely stored in Jenkins.
 
-### Step 4: Verify
+### Step 5: Verify
 
 1. Visit Jenkins: https://jenkins.arpansahu.space
 2. Check pipelines are created
 3. Verify credentials in Jenkins → Credentials
+4. Make a test commit to verify webhook triggers build automatically
 4. Trigger a test build
 
 ## Prerequisites
@@ -257,15 +279,21 @@ bash -x ./upload_project_env.sh
   - [ ] Configure `jenkins_pipeline_creator/.env.jenkins`
   - [ ] Run `./create_jenkins_pipelines.sh`
   - [ ] Verify 21 pipelines created in Jenkins
-- [ ] 5. **Upload Environment Variables:**
+- [ ] 5. **Setup GitHub Webhooks:**
+  - [ ] Add webhook to each repository
+  - [ ] URL: `https://jenkins.arpansahu.space/github-webhook/`
+  - [ ] Verify green checkmark after first ping
+- [ ] 6. **Upload Environment Variables:**
   - [ ] Configure `jenkins_project_env/.env.jenkins` (if different)
   - [ ] Run `./upload_project_env.sh` for each project
   - [ ] Verify credentials in Jenkins → Credentials
-- [ ] 6. **Test Builds:**
-  - [ ] Trigger one build pipeline
-  - [ ] Verify .env file is created
-  - [ ] Check deployment pipeline works
-- [ ] 7. **Setup Webhooks** (optional for instant builds)
+- [ ] 7. **Test Builds:**
+  - [ ] Make a test commit to any repository
+  - [ ] Verify webhook triggers build job automatically
+  - [ ] Verify deploy job triggers automatically after successful build
+  - [ ] Check .env file is created in build
+  - [ ] Verify deployment completes successfully
+  - [ ] Full CI/CD pipeline working end-to-end!
 
 ## Directory Structure
 

@@ -232,22 +232,103 @@ The script creates the following pipelines:
 ## Pipeline Features
 
 ### Build Pipelines
-- Poll SCM every 5 minutes: `H/5 * * * *`
-- Use `Jenkinsfile-build` from repository
-- Pull from `main` branch
-- Use GitHub credentials: `github_auth`
+- **Trigger:** GitHub webhook (instant builds on push)
+- **Jenkinsfile:** `Jenkinsfile-build` from repository
+- **Branch:** `main`
+- **Credentials:** `github_auth`
+- **Action:** Builds Docker image and pushes to Harbor registry
 
 ### Deploy Pipelines
-- Poll SCM every 5 minutes: `H/5 * * * *`
-- Use `Jenkinsfile-deploy` from repository
-- Pull from `main` branch
-- Use GitHub credentials: `github_auth`
+- **Trigger:** Automatic after successful build (build completion trigger)
+- **Parameters:** IMAGE_TAG (default: latest), ENVIRONMENT (prod/staging/dev)
+- **Jenkinsfile:** `Jenkinsfile-deploy` from repository
+- **Branch:** `main`
+- **Credentials:** `github_auth`
+- **Action:** Deploys application from Harbor registry
+
+**Pipeline Flow:**
+```
+GitHub Push → Build Job (webhook) → Deploy Job (on build success) → Production
+```
 
 ### README Pipeline
-- Poll SCM every 5 minutes: `H/5 * * * *`
-- Use `Jenkinsfile` from repository
-- Pull from `main` branch
-- Use GitHub credentials: `github_auth`
+- **Trigger:** GitHub webhook (instant builds on push)
+- **Parameters:** project_git_url, environment
+- **Jenkinsfile:** `Jenkinsfile` from repository
+- **Branch:** `main`
+- **Credentials:** `github_auth`
+
+## CI/CD Pipeline Flow
+
+The automated pipeline follows this flow:
+
+1. **Developer pushes code** to GitHub (any branch configured)
+2. **GitHub webhook triggers build job** instantly
+3. **Build job runs:**
+   - Checks out code
+   - Builds Docker image
+   - Runs tests (if configured)
+   - Pushes image to Harbor registry with tags
+4. **Deploy job triggers automatically** (only on successful build)
+5. **Deploy job runs:**
+   - Pulls image from Harbor
+   - Deploys to configured environment
+   - Verifies deployment
+
+**Benefits:**
+- ✅ No manual intervention needed
+- ✅ Fast feedback loop (instant builds on push)
+- ✅ Automatic deployments after successful builds
+- ✅ No hardcoded job names in Jenkinsfiles
+- ✅ Configurable environments (prod/staging/dev)
+
+## GitHub Webhook Setup
+
+After creating pipelines, configure GitHub webhooks for automatic builds:
+
+### Option 1: Automatic (via GitHub Plugin)
+
+If you have Jenkins GitHub plugin properly configured with GitHub credentials:
+
+1. Jenkins will automatically register webhooks for each repository
+2. No manual configuration needed
+
+### Option 2: Manual Setup
+
+For each repository:
+
+1. Go to GitHub: **Repository → Settings → Webhooks**
+2. Click **Add webhook**
+3. Configure:
+   - **Payload URL:** `https://jenkins.arpansahu.space/github-webhook/`
+   - **Content type:** `application/json`
+   - **Secret:** (optional, for added security)
+   - **Events:** Select "Just the push event"
+   - **Active:** ✓ Checked
+4. Click **Add webhook**
+5. Verify: Green checkmark appears after first ping
+
+### Verify Webhook
+
+Test the webhook:
+```bash
+# Make a commit to the repository
+git commit --allow-empty -m "Test webhook"
+git push origin main
+
+# Check Jenkins - build should start automatically within seconds
+```
+
+### Troubleshooting Webhooks
+
+| Issue | Solution |
+|-------|----------|
+| **Webhook shows error** | Check Jenkins URL is accessible from GitHub (public URL required) |
+| **Build doesn't trigger** | Verify webhook URL ends with `/github-webhook/` |
+| **403 Forbidden** | Check Jenkins CSRF protection settings |
+| **SSL error** | Ensure Jenkins has valid SSL certificate |
+
+**Note:** GitHub webhooks require Jenkins to be accessible from the internet. If using a local/private Jenkins, consider using alternatives like polling or SSH tunneling.
 
 ## Adding New Repositories
 
@@ -345,6 +426,30 @@ pipeline {
 }
 ```
 
+## Important: Update Your Jenkinsfiles
+
+**Remove hardcoded job names** from your Jenkinsfiles since deploy jobs are now automatically triggered:
+
+### ❌ Old Way (Don't use):
+```groovy
+stage('Trigger Deploy') {
+    steps {
+        build job: 'project_name-deploy', wait: false
+    }
+}
+```
+
+### ✅ New Way (Automatic):
+Deploy jobs trigger automatically after successful build - **no code needed**!
+
+Just remove any `build job:` calls to deploy pipelines from your build Jenkinsfiles. The Jenkins job configuration handles the triggering automatically.
+
+### Benefits:
+- ✅ No hardcoded job names in code
+- ✅ Cleaner Jenkinsfiles
+- ✅ Automatic pipeline execution
+- ✅ Jenkins manages the flow, not code
+
 ## Related Tools
 
 - **[jenkins_project_env](../jenkins_project_env/)** - Upload project .env files to Jenkins credentials
@@ -359,8 +464,10 @@ pipeline {
 - [ ] 5. Configure repositories in `repos_config.sh`
 - [ ] 6. Run `./create_jenkins_pipelines.sh`
 - [ ] 7. Verify pipelines in Jenkins UI
-- [ ] 8. Upload project .env files using `jenkins_project_env/upload_project_env.sh`
-- [ ] 9. Test build and deploy pipelines
+- [ ] 8. **Setup GitHub webhooks** for each repository (see GitHub Webhook Setup section)
+- [ ] 9. Upload project .env files using `jenkins_project_env/upload_project_env.sh`
+- [ ] 10. Test build and deploy pipelines
+- [ ] 11. Verify webhooks trigger builds automatically
 
 ## Quick Start Summary
 

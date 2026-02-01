@@ -53,7 +53,11 @@ You should see **21 new pipelines** created! ✨
 ## What Gets Created?
 
 ### Django Projects (20 pipelines)
-Each project gets 2 pipelines (build + deploy):
+Each project gets 2 linked pipelines:
+- **Build pipeline** (e.g., `altered_datum_api-build`) - Triggered by GitHub webhook
+- **Deploy pipeline** (e.g., `altered_datum_api-deploy`) - Auto-triggered after successful build
+
+**Projects:**
 - altered_datum_api
 - arpansahu_dot_me
 - borcelle_crm
@@ -175,17 +179,45 @@ Existing pipelines will be skipped, only new ones created! 🎯
 
 After creating pipelines:
 
-1. **Upload project .env files** to Jenkins:
+1. **Setup GitHub Webhooks** for automatic builds:
+   - Go to each GitHub repository → Settings → Webhooks
+   - Add webhook: `https://jenkins.arpansahu.space/github-webhook/`
+   - Content type: `application/json`
+   - Events: "Just the push event"
+   - See full instructions in [README.md](README.md#github-webhook-setup)
+
+2. **Upload project .env files** to Jenkins:
    ```bash
    cd ../jenkins_project_env
    ./upload_project_env.sh
    ```
 
-2. **Verify pipelines** in Jenkins UI
+3. **Verify pipelines** in Jenkins UI
 
-3. **Test builds** - Trigger a build for one project to verify
+4. **Test the automated flow:**
+   - Make a commit and push to any repository
+   - Watch build job trigger automatically (via webhook)
+   - Watch deploy job trigger automatically after build succeeds
+   - Full CI/CD in action! 🚀
 
-4. **Setup webhooks** (optional) - Configure GitHub webhooks for instant builds
+5. **Monitor** - Check Jenkins dashboard for build status
+
+## Pipeline Flow
+
+```
+GitHub Push → Build Job (webhook) → Deploy Job (auto) → Production
+     ↓              ↓                      ↓
+   Instant      Build+Test            Auto Deploy
+```
+
+**How it works:**
+1. Push code to GitHub
+2. Webhook triggers build job instantly
+3. Build job creates Docker image and pushes to Harbor
+4. Deploy job automatically triggers on successful build
+5. Deploy job pulls image and deploys to environment
+
+**No manual steps needed!** ✨
 
 ## Complete Workflow
 

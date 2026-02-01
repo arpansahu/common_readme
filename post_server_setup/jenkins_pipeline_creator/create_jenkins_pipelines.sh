@@ -154,7 +154,7 @@ process_repository() {
         if [ "$has_deploy" = "true" ]; then
             ((total_jobs++))
             local deploy_job_name="${repo_name}_deploy"
-            xml_content=$(generate_deploy_job_xml "$deploy_job_name" "$git_url" "$DEFAULT_BRANCH" "Jenkinsfile-deploy")
+            xml_content=$(generate_deploy_job_xml "$repo_name" "$git_url" "$DEFAULT_BRANCH" "Jenkinsfile-deploy")
             if create_jenkins_job "$deploy_job_name" "$xml_content"; then
                 ((success_count++))
             fi
@@ -190,29 +190,19 @@ main() {
     local successful_repos=0
     local failed_repos=0
     
-    # Process common_readme first
-    if [ -n "${REPOS[common_readme]}" ]; then
+    # Process all repositories from REPOS_LIST
+    while IFS='|' read -r repo_name git_url has_build has_deploy repo_type; do
+        # Skip empty lines
+        [ -z "$repo_name" ] && continue
+        
         ((total_repos++))
-        if process_repository "common_readme" "${REPOS[common_readme]}"; then
+        if process_repository "$repo_name" "$git_url|$has_build|$has_deploy|$repo_type"; then
             ((successful_repos++))
         else
             ((failed_repos++))
         fi
         echo ""
-    fi
-    
-    # Process all other repositories
-    for repo_name in "${!REPOS[@]}"; do
-        if [ "$repo_name" != "common_readme" ]; then
-            ((total_repos++))
-            if process_repository "$repo_name" "${REPOS[$repo_name]}"; then
-                ((successful_repos++))
-            else
-                ((failed_repos++))
-            fi
-            echo ""
-        fi
-    done
+    done <<< "$REPOS_LIST"
     
     # Summary
     echo ""
