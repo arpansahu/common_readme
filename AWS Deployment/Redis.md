@@ -194,7 +194,7 @@ print(cache.get('test_key'))  # Should print: test_value
 
 ## Redis Commander (Web UI)
 
-See [RedisCommander.md](RedisCommander.md) for setting up a web-based Redis management interface.
+See [redis_commander/README.md](redis_commander/README.md) for setting up a web-based Redis management interface.
 
 Access: https://redis.arpansahu.space
 

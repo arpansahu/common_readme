@@ -25,7 +25,11 @@
 
 [README of Intro]
 
-**Note:** For complete Home Server setup from scratch (including laptop conversion, SSH GUI access, and router configuration), see the [Home Server Setup Guide](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/home_server_setup.md).
+**Note:** For complete setup guides:
+- **Home Server**: [Home Server Setup Guide](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/home_server/README.md)
+- **Installation Order**: [Installation Order Guide](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/INSTALLATION_ORDER.md)
+- **SSH Web Terminal**: [SSH Web Terminal Setup](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/ssh-web-terminal/README.md)
+- **Airtel Router Access**: [Airtel Router Admin Setup](https://github.com/arpansahu/common_readme/blob/main/AWS%20Deployment/airtel/README.md)
 
 ### Step 1: Dockerize
 

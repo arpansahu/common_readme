@@ -212,38 +212,40 @@ All deployment options use the same software stack:
 
 This repository provides step-by-step guides for:
 
-1. [Docker Installation](docker_installation.md)
-2. [Nginx Basic Setup](nginx.md)
-3. [Nginx HTTPS with Wildcard SSL](nginx_https.md)
-4. [Kubernetes with Portainer](kubernetes_with_portainer/deployment.md)
-5. [PostgreSQL Setup](Postgres.md)
-6. [Redis Commander](RedisCommander.md)
-7. [RabbitMQ](Rabbitmq.md)
-8. [Kafka with KRaft](kafka/Kafka.md)
-9. [AKHQ (Kafka UI)](kafka/AKHQ.md)
-10. [Portainer](Portainer.md)
-11. [PgAdmin](Pgadmin.md)
-12. [MinIO Object Storage](Minio.md)
-13. [Jenkins CI/CD](Jenkins/Jenkins.md)
-14. [Harbor Private Registry](harbor/harbor.md)
-15. [Home Server Setup](home_server_setup.md) ← Complete laptop-to-server guide
-16. [SSH GUI Access (Guacamole)](ssh_guacamole.md) ← Browser-based SSH/RDP
-17. [Router Admin via Nginx](router_admin_nginx.md) ← Secure router management
+0. [SSH Key Setup (Do This First!)](home_server/steps/00-ssh-key-setup.md) ← **IMPORTANT**
+1. [Installation Order & Dependencies](INSTALLATION_ORDER.md) ← **Start Here**
+2. [Docker Installation](01-docker/docker_installation.md)
+3. [Nginx Setup (HTTP + HTTPS)](02-nginx/README.md)
+4. [Kubernetes with Portainer](kubernetes_k3s/deployment.md)
+5. [PostgreSQL Setup](03-postgres/README.md)
+6. [Redis Setup](04-redis/README.md)
+7. [Redis Commander](07-redis_commander/README.md)
+8. [RabbitMQ](09-rabbitmq/README.md)
+9. [Kafka with KRaft](10-kafka/Kafka.md)
+10. [AKHQ (Kafka UI)](10-kafka/AKHQ.md)
+11. [Portainer](05-portainer/README.md)
+12. [PgAdmin](06-pgadmin/README.md)
+13. [MinIO Object Storage](08-minio/README.md)
+14. [Jenkins CI/CD](12-jenkins/Jenkins.md)
+15. [Harbor Private Registry](11-harbor/harbor.md)
+16. [Home Server Setup](home_server/README.md) ← Complete laptop-to-server guide
+17. [SSH Web Terminal](ssh-web-terminal/README.md) ← Browser-based SSH access
+18. [Airtel Router Admin](airtel/README.md) ← Secure router management
 
 ### Getting Started
 
 **For EC2/VPS Deployment:**
 1. Provision Ubuntu 22.04 server
-2. Follow Docker installation guide
-3. Set up Nginx with HTTPS
-4. Install required services
-5. Configure applications
+2. Follow [Installation Order Guide](INSTALLATION_ORDER.md)
+3. Install Docker and Docker Compose
+4. Set up Nginx with HTTPS
+5. Install required services in sequence
 
 **For Home Server Deployment:**
-1. Follow [Home Server Setup Guide](home_server_setup.md)
+1. Follow [Home Server Setup Guide](home_server/README.md)
 2. Install Ubuntu Server 22.04
 3. Configure UPS and backup internet
-4. Follow all service installation guides
+4. Follow [Installation Order Guide](INSTALLATION_ORDER.md)
 5. Set up monitoring and alerting
 
 All projects are dockerized and run on predefined ports specified in Dockerfile and docker-compose.yml.

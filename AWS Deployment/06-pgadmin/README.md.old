@@ -1,0 +1,301 @@
+## PgAdmin - PostgreSQL Administration Tool
+
+PgAdmin is the most popular PostgreSQL administration and development platform.
+
+### Quick Install
+
+```bash
+cd "AWS Deployment/pgadmin"
+chmod +x install.sh
+./install.sh
+```
+
+### Installation Script
+
+```bash file=install.sh
+```
+
+### Nginx Configuration
+
+```nginx file=nginx.conf
+```
+
+### Manual Installation
+
+#### 1. Create Volume
+
+```bash
+docker volume create pgadmin_data
+```
+
+#### 2. Run PgAdmin
+
+```bash
+docker run -d \
+  --name pgadmin \
+  --restart unless-stopped \
+  -p 127.0.0.1:5050:80 \
+  -e PGADMIN_DEFAULT_EMAIL=admin@arpansahu.me \
+  -e PGADMIN_DEFAULT_PASSWORD=Gandu302@pgadmin \
+  -v pgadmin_data:/var/lib/pgadmin \
+  dpage/pgadmin4:latest
+```
+
+#### 3. Configure Nginx
+
+```bash
+sudo cp nginx.conf /etc/nginx/sites-available/pgadmin
+sudo ln -sf /etc/nginx/sites-available/pgadmin /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### Verification
+
+```bash
+# Check container
+docker ps | grep pgadmin
+
+# Check port
+sudo ss -lntp | grep 5050
+
+# Test local access
+curl http://localhost:5050
+
+# Test HTTPS
+curl https://pgadmin.arpansahu.space
+```
+
+### Adding PostgreSQL Server
+
+1. **Login to PgAdmin:** https://pgadmin.arpansahu.space
+   - Email: admin@arpansahu.me
+   - Password: Gandu302@pgadmin
+
+2. **Add Server:**
+   - Right-click "Servers" → Register → Server
+
+3. **General Tab:**
+   - Name: Local PostgreSQL
+
+4. **Connection Tab:**
+   - Host: 192.168.1.200 (or arpansahu.space)
+   - Port: 5432
+   - Maintenance database: postgres
+   - Username: postgres
+   - Password: Gandu302postgres
+   - Save password: ✓
+
+### Common Tasks
+
+**Query Database:**
+- Navigate to database → Schemas → Tables
+- Right-click table → View/Edit Data
+
+**Execute SQL:**
+- Tools → Query Tool
+- Write SQL and click Execute (F5)
+
+**Backup Database:**
+- Right-click database → Backup
+- Choose format (Custom, Tar, Plain)
+- Set filename and options
+- Click Backup
+
+**Restore Database:**
+- Right-click database → Restore
+- Select backup file
+- Click Restore
+
+**Create Database:**
+- Right-click Databases → Create → Database
+- Enter name and owner
+- Click Save
+
+**Manage Users:**
+- Right-click Login/Group Roles → Create → Login/Group Role
+- Set username, password, privileges
+
+### Configuration
+
+**Change default settings:**
+- File → Preferences
+
+**Keyboard shortcuts:**
+- Execute query: F5
+- Explain query: F7
+- Save: Ctrl+S
+- New query: Ctrl+T
+
+**Auto-complete:**
+- Ctrl+Space for suggestions
+- Tab to complete
+
+### Docker Commands
+
+**Restart PgAdmin:**
+```bash
+docker restart pgadmin
+```
+
+**View logs:**
+```bash
+docker logs -f pgadmin
+```
+
+**Update PgAdmin:**
+```bash
+docker pull dpage/pgadmin4:latest
+docker stop pgadmin && docker rm pgadmin
+./install.sh
+```
+
+**Backup PgAdmin config:**
+```bash
+docker run --rm \
+  -v pgadmin_data:/data \
+  -v $(pwd):/backup \
+  alpine tar czf /backup/pgadmin-backup-$(date +%Y%m%d).tar.gz /data
+```
+
+**Restore PgAdmin config:**
+```bash
+docker run --rm \
+  -v pgadmin_data:/data \
+  -v $(pwd):/backup \
+  alpine sh -c "cd /data && tar xzf /backup/pgadmin-backup.tar.gz --strip 1"
+```
+
+### Environment Variables
+
+**Available options:**
+```bash
+docker run -d \
+  --name pgadmin \
+  -e PGADMIN_DEFAULT_EMAIL=admin@example.com \
+  -e PGADMIN_DEFAULT_PASSWORD=password \
+  -e PGADMIN_LISTEN_PORT=80 \
+  -e PGADMIN_CONFIG_SERVER_MODE=True \
+  -e PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False \
+  dpage/pgadmin4:latest
+```
+
+### Troubleshooting
+
+**Can't login:**
+```bash
+# Check container logs
+docker logs pgadmin
+
+# Verify credentials
+echo $PGADMIN_EMAIL
+echo $PGADMIN_PASSWORD
+
+# Restart container
+docker restart pgadmin
+```
+
+**Can't connect to PostgreSQL:**
+```bash
+# Test PostgreSQL connection from server
+psql -h localhost -U postgres -d postgres
+
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Verify PostgreSQL allows connections
+sudo nano /etc/postgresql/*/main/pg_hba.conf
+# Should have: host all all 0.0.0.0/0 md5
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+```
+
+**Slow query execution:**
+- Check PostgreSQL server performance
+- Enable query caching in PgAdmin
+- Use EXPLAIN to optimize queries
+
+**SSL connection issues:**
+```bash
+# Disable SSL requirement (for local connections)
+# In connection settings:
+# SSL mode: Prefer (or Disable for localhost)
+```
+
+### Security
+
+**Best practices:**
+1. Use strong password for PgAdmin login
+2. Keep PgAdmin updated
+3. Use TLS connections to PostgreSQL
+4. Limit database user permissions
+5. Regular backups of PgAdmin config
+6. Don't save passwords in PgAdmin (use pgpass file)
+
+**pgpass file:**
+```bash
+# Create pgpass file
+nano ~/.pgpass
+
+# Add line:
+hostname:port:database:username:password
+
+# Example:
+arpansahu.space:5432:*:postgres:Gandu302postgres
+
+# Set permissions
+chmod 600 ~/.pgpass
+```
+
+### PostgreSQL Connection Strings
+
+**Python (psycopg2):**
+```python
+import psycopg2
+
+conn = psycopg2.connect(
+    host="arpansahu.space",
+    port=5432,
+    database="arpansahu_one_db",
+    user="postgres",
+    password="Gandu302postgres"
+)
+```
+
+**Django:**
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'arpansahu_one_db',
+        'USER': 'postgres',
+        'PASSWORD': 'Gandu302postgres',
+        'HOST': 'arpansahu.space',
+        'PORT': '5432',
+        'OPTIONS': {
+            'options': '-c search_path=arpansahu_dot_me'
+        }
+    }
+}
+```
+
+**CLI:**
+```bash
+psql -h arpansahu.space -p 5432 -U postgres -d arpansahu_one_db
+```
+
+### Access Details
+
+- **URL:** https://pgadmin.arpansahu.space
+- **Email:** admin@arpansahu.me
+- **Password:** Gandu302@pgadmin
+- **Port:** 5050 (localhost only)
+- **Container:** `pgadmin`
+- **Volume:** `pgadmin_data`
+
+### Configuration Files
+
+- Installation script: [`install.sh`](./install.sh)
+- Nginx configuration: [`nginx.conf`](./nginx.conf)
+- Data volume: `pgadmin_data`
