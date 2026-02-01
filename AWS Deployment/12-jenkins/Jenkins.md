@@ -63,6 +63,77 @@ Key Principles:
 
 Jenkins requires Java to run. We'll install OpenJDK 21 (latest LTS).
 
+**⚠️ Important:** Java 17 support ends March 31, 2026. Use Java 21 for continued support.
+
+#### Check Current Java Version
+
+```bash
+java -version
+```
+
+If you see Java 17 or older, follow the upgrade steps below.
+
+#### Upgrade from Java 17 to Java 21 (If Needed)
+
+If Jenkins is already installed on Java 17:
+
+1. Install Java 21
+
+    ```bash
+    sudo apt update
+    sudo apt install -y openjdk-21-jdk
+    ```
+
+2. Check Jenkins service status
+
+    ```bash
+    sudo systemctl status jenkins
+    ```
+
+3. Update Jenkins to use Java 21
+
+    ```bash
+    sudo systemctl stop jenkins
+    sudo update-alternatives --config java
+    ```
+
+    Select Java 21 from the list (e.g., `/usr/lib/jvm/java-21-openjdk-amd64/bin/java`)
+
+4. Verify Java version
+
+    ```bash
+    java -version
+    ```
+
+    Should show: `openjdk version "21.0.x"`
+
+5. Update JAVA_HOME for Jenkins
+
+    ```bash
+    sudo nano /etc/default/jenkins
+    ```
+
+    Add or update:
+    ```bash
+    JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+    JENKINS_JAVA_CMD="$JAVA_HOME/bin/java"
+    ```
+
+6. Restart Jenkins
+
+    ```bash
+    sudo systemctl start jenkins
+    sudo systemctl status jenkins
+    ```
+
+7. Verify in Jenkins UI
+
+    Dashboard → Manage Jenkins → System Information → Look for `java.version` (should be 21.x)
+
+#### Fresh Installation of Java 21
+
+For new installations:
+
 1. Update system packages
 
     ```bash
@@ -107,19 +178,24 @@ Jenkins requires Java to run. We'll install OpenJDK 21 (latest LTS).
 
 ### Part 2: Install Jenkins LTS
 
-1. Add Jenkins repository key
+Jenkins Long-Term Support (LTS) releases are recommended for production environments. Current LTS: **2.528.3**
+
+1. Add Jenkins repository key (both legacy and modern format for compatibility)
 
     ```bash
-    curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
-      /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+    # Modern keyring format (recommended)
+    curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo gpg --dearmor -o /usr/share/keyrings/jenkins-archive-keyring.gpg
+    
+    # Also add legacy key for repository compatibility
+    gpg --keyserver keyserver.ubuntu.com --recv-keys 7198F4B714ABFC68
+    gpg --export 7198F4B714ABFC68 > /tmp/jenkins-key.gpg
+    sudo gpg --dearmor < /tmp/jenkins-key.gpg > /usr/share/keyrings/jenkins-old-keyring.gpg
     ```
 
 2. Add Jenkins repository
 
     ```bash
-    echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-      https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-      /etc/apt/sources.list.d/jenkins.list > /dev/null
+    echo "deb [signed-by=/usr/share/keyrings/jenkins-old-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
     ```
 
 3. Update package list
@@ -128,25 +204,37 @@ Jenkins requires Java to run. We'll install OpenJDK 21 (latest LTS).
     sudo apt update
     ```
 
-4. Install Jenkins
+4. Install Jenkins (latest LTS)
 
     ```bash
+    # Install latest LTS version
     sudo apt install -y jenkins
+    
+    # Or install specific LTS version
+    # sudo apt install -y jenkins=2.528.3
     ```
 
-5. Enable Jenkins service
+5. Check installed version
+
+    ```bash
+    jenkins --version
+    ```
+
+    Expected: `2.528.3` or newer LTS
+
+6. Enable Jenkins service
 
     ```bash
     sudo systemctl enable jenkins
     ```
 
-6. Start Jenkins service
+7. Start Jenkins service
 
     ```bash
     sudo systemctl start jenkins
     ```
 
-7. Verify Jenkins is running
+8. Verify Jenkins is running
 
     ```bash
     sudo systemctl status jenkins
@@ -154,13 +242,72 @@ Jenkins requires Java to run. We'll install OpenJDK 21 (latest LTS).
 
     Expected: Active (running)
 
-8. Check Jenkins is listening on port 8080
+9. Check Jenkins is listening on port 8080
 
     ```bash
     sudo ss -tulnp | grep 8080
     ```
 
     Expected: Jenkins listening on 127.0.0.1:8080
+
+### Part 2.1: Upgrade Jenkins to Latest LTS
+
+To upgrade an existing Jenkins installation:
+
+1. Check current version
+
+    ```bash
+    jenkins --version
+    # Or via API:
+    curl -s -I https://jenkins.arpansahu.space/api/json | grep X-Jenkins
+    ```
+
+2. Check available versions
+
+    ```bash
+    apt-cache policy jenkins | head -30
+    ```
+
+    Note: Look for versions 2.xxx.x (LTS releases), not 2.5xx+ (weekly releases)
+
+3. Backup Jenkins before upgrade
+
+    ```bash
+    sudo tar -czf /tmp/jenkins-backup-$(date +%Y%m%d-%H%M%S).tar.gz /var/lib/jenkins/
+    ```
+
+4. Stop Jenkins
+
+    ```bash
+    sudo systemctl stop jenkins
+    ```
+
+5. Upgrade to latest LTS
+
+    ```bash
+    sudo apt update
+    sudo apt install --only-upgrade jenkins -y
+    
+    # Or install specific LTS version:
+    # sudo apt install jenkins=2.528.3 -y
+    ```
+
+6. Start Jenkins
+
+    ```bash
+    sudo systemctl start jenkins
+    ```
+
+7. Verify upgrade
+
+    ```bash
+    jenkins --version
+    sudo systemctl status jenkins
+    ```
+
+8. Check Jenkins UI
+
+    https://jenkins.arpansahu.space → Manage Jenkins → About Jenkins
 
 ### Part 3: Configure Nginx Reverse Proxy
 
@@ -343,6 +490,30 @@ Jenkins stores credentials securely for use in pipelines. We'll configure 4 esse
     Click: Create
 
     Use case: Sentry release tracking, source map uploads, error monitoring integration
+
+#### 5.5: GitHub Authentication Credentials
+
+1. Add GitHub credentials
+
+    Dashboard → Manage Jenkins → Credentials → System → Global credentials → Add Credentials
+
+2. Configure GitHub credentials
+
+    - **Kind**: Username with password
+    - **Scope**: Global
+    - **Username**: (GitHub username)
+    - **Password**: (GitHub Personal Access Token with repo permissions)
+    - **ID**: `github_auth`
+    - **Description**: `GitHub authentication for branch merging and repository operations`
+
+    Click: Create
+
+    **How to generate GitHub PAT:**
+    1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+    2. Generate new token with permissions: `repo` (Full control of private repositories)
+    3. Copy token immediately (shown only once)
+
+    Use case: Automated branch merging, repository operations, deployment workflows
 
 ### Part 6: Configure Global Jenkins Variables
 
