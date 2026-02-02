@@ -1013,7 +1013,13 @@ Internet (HTTPS)
    sudo systemctl reload nginx
    ```
 
-**Note:** Harbor's internal nginx is already set to `client_max_body_size 0;` (unlimited), so you only need to fix the external nginx.
+**Note:** Harbor's internal nginx is already set to `client_max_body_size 0;` (unlimited) in its `/etc/nginx/nginx.conf`, so you only need to fix the external/system nginx configuration at `/etc/nginx/sites-available/services`.
+
+**Verify Harbor's internal nginx (optional):**
+```bash
+docker exec nginx cat /etc/nginx/nginx.conf | grep client_max_body_size
+# Should show: client_max_body_size 0;
+```
 
 #### 2. Cannot Connect to Harbor
 
