@@ -247,14 +247,11 @@ Key Principles:
 
         ssl_protocols TLSv1.2 TLSv1.3;
 
-        # Allow large image uploads
-        client_max_body_size 0;
-
-        # Disable buffering for large uploads
-        proxy_buffering off;
-        proxy_request_buffering off;
-
         location / {
+            # Allow large image uploads (2GB recommended, 0 for unlimited)
+            # Note: Set to at least 2G for typical Docker images
+            client_max_body_size 2G;
+            
             proxy_pass http://127.0.0.1:8080;
 
             proxy_set_header Host $host;
@@ -985,6 +982,87 @@ Internet (HTTPS)
 8. Monitor disk usage in /data
 9. Use RBAC for multi-tenant access
 10. Keep Harbor updated
+
+### Troubleshooting
+
+#### 1. 413 Request Entity Too Large Error
+
+**Symptom:** Docker push fails with `413 Request Entity Too Large` when pushing large images.
+
+**Cause:** Nginx `client_max_body_size` limit is too small (default is 1MB).
+
+**Solution:**
+
+1. Edit system nginx configuration:
+   ```bash
+   sudo nano /etc/nginx/sites-available/services
+   ```
+
+2. Find the Harbor location block and add/update:
+   ```nginx
+   location / {
+       client_max_body_size 2G;  # Adjust as needed
+       proxy_pass http://127.0.0.1:8080;
+       # ... rest of config
+   }
+   ```
+
+3. Test and reload nginx:
+   ```bash
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
+
+**Note:** Harbor's internal nginx is already set to `client_max_body_size 0;` (unlimited), so you only need to fix the external nginx.
+
+#### 2. Cannot Connect to Harbor
+
+**Check these:**
+```bash
+# 1. Is Harbor running?
+sudo systemctl status harbor
+docker ps | grep harbor
+
+# 2. Is nginx running?
+sudo systemctl status nginx
+
+# 3. Check logs
+sudo journalctl -u harbor -n 50
+docker logs nginx
+```
+
+#### 3. Login Issues
+
+```bash
+# Reset admin password
+cd /opt/harbor
+sudo docker-compose stop
+sudo ./prepare
+sudo docker-compose up -d
+```
+
+#### 4. Disk Space Full
+
+```bash
+# Check disk usage
+df -h /data
+
+# Run garbage collection
+docker exec harbor-core harbor-gc
+
+# Or via UI: Administration → Garbage Collection → Run Now
+```
+
+#### 5. Slow Image Pushes
+
+Check nginx configuration for these settings:
+```nginx
+proxy_buffering off;
+proxy_request_buffering off;
+proxy_connect_timeout 300;
+proxy_send_timeout 300;
+proxy_read_timeout 300;
+```
 
 ### Next Steps
 
