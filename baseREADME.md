@@ -57,20 +57,13 @@ Create a file named docker-compose.yml and add following lines in it
 
 ### Step 3: Containerizing with Kubernetes
 
-[KUBE WITH DASHBOARD]
 [KUBE DEPLOYMENT]
 
 ### Step 4: Serving the requests from Nginx
 
 [README of Nginx Setup]
 
-Now it's time to enable HTTPS for this server
-
-### Step 5: Enabling HTTPS 
-
-[README of Nginx HTTPS Setup]
-
-After all these steps your Nginx configuration file located at /etc/nginx/sites-available/arpansahu will be looking similar to this
+After all these steps your Nginx configuration file located at /etc/nginx/sites-available/[PROJECT_NAME_DASH] will be looking similar to this
 
 ```bash
 [NGINX_SERVER]
