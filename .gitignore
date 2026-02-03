@@ -66,3 +66,5 @@ creds.txt
 
 venv/
 ssh_helper.sh
+post_server_setup/jenkins_pipeline_creator/jenkins-cli.jar
+post_server_setup/jenkins_project_env/jenkins-cli.jar

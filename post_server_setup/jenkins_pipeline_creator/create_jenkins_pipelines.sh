@@ -60,7 +60,7 @@ check_jenkins_cli() {
     
     if [ ! -f "$JENKINS_CLI" ]; then
         log_warning "Jenkins CLI not found. Downloading..."
-        wget -q "${JENKINS_URL}/jnlpJars/jenkins-cli.jar" -O "$JENKINS_CLI"
+        curl -s -o "$JENKINS_CLI" "${JENKINS_URL}/jnlpJars/jenkins-cli.jar"
         
         if [ $? -eq 0 ]; then
             log_success "Jenkins CLI downloaded successfully"

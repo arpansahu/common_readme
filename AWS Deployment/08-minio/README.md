@@ -277,7 +277,7 @@ This policy makes:
 - `protected/*` → **Private** (requires authentication + ownership check in Django)
 - Everything else → **Private**
 
-**Folder Structure:**
+**Folder Structure Option 1: Simple**
 ```
 arpansahu-one-bucket/
 ├── static/              # PUBLIC (anonymous read via bucket policy)
@@ -291,6 +291,50 @@ arpansahu-one-bucket/
     ├── invoices/
     └── private-docs/
 ```
+
+**Folder Structure Option 2: Multi-Project with Portfolio Prefix** ⭐ **Recommended**
+
+For hosting multiple Django projects in one bucket:
+
+```
+your-bucket-name/
+└── portfolio/           # PUBLIC (anonymous read via bucket policy)
+    ├── django_starter/
+    │   └── static/
+    │       ├── css/
+    │       ├── js/
+    │       └── admin/
+    ├── borcelle_crm/
+    │   └── static/
+    ├── chew_and_cheer/
+    │   └── static/
+    └── arpansahu_dot_me/
+        └── static/
+```
+
+**Set public access for portfolio prefix using mc:**
+
+```bash
+# Install MinIO client first (if not installed)
+# See "Install MinIO Client" section below
+
+# Set up alias (one-time)
+mc alias set myminio http://localhost:9000 your_minio_root_user your_minio_root_password
+
+# Set public read access for portfolio/* prefix
+mc anonymous set public myminio/your-bucket-name/portfolio/
+
+# Verify the policy
+mc anonymous get myminio/your-bucket-name/portfolio/
+# Should return: Access permission for `your-bucket-name/portfolio/` is `public`
+```
+
+**Why use portfolio/ prefix?**
+- ✅ All projects share one bucket (cost-effective)
+- ✅ Clear organization and separation
+- ✅ Single bucket policy for all static files
+- ✅ Easy to add new projects
+- ✅ Consistent URL structure: `minioapi.arpansahu.space/your-bucket-name/portfolio/project-name/static/...`
 
 ### 4. Create Access Keys for Applications
 
@@ -951,6 +995,225 @@ Create access keys with minimal required permissions:
 8. **Keep MinIO updated** to latest stable version
 9. **Review bucket policies regularly** - ensure they match current requirements
 10. **Use presigned URLs for private content** - temporary access with expiration
+
+---
+
+---
+
+## 🌐 Complete Django Integration with All Services
+
+### Full Production Configuration Example
+
+This example shows a complete Django setup with **MinIO + Redis (TLS) + PostgreSQL + Celery**, all using domain names and secure SSL/TLS connections.
+
+#### Environment Variables (.env)
+
+```env
+# Django
+DEBUG=False
+SECRET_KEY="your-secret-key"
+ALLOWED_HOSTS=django-starter.arpansahu.space
+
+# PostgreSQL (TLS stream proxy on port 9552)
+DATABASE_URL=postgresql://postgres:your_postgres_password@postgres.arpansahu.space:9552/your_database_name
+
+# Redis (TLS stream proxy on port 9551)
+REDIS_CLOUD_URL=rediss://:your_redis_password@redis.arpansahu.space:9551
+
+# MinIO S3 (API endpoint with HTTPS)
+AWS_S3_ENDPOINT_URL=https://minioapi.arpansahu.space
+AWS_S3_VERIFY=True
+AWS_ACCESS_KEY_ID=your_minio_access_key
+AWS_SECRET_ACCESS_KEY=your_minio_secret_key
+AWS_STORAGE_BUCKET_NAME=your-bucket-name
+AWS_S3_ADDRESSING_STYLE=path
+```
+
+#### Django Settings (settings.py)
+
+```python
+import os
+import ssl
+from pathlib import Path
+
+# Load environment variables
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+
+# Database Configuration
+import dj_database_url
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+# Redis Configuration
+REDIS_CLOUD_URL = os.getenv('REDIS_CLOUD_URL')
+
+# Cache with Redis SSL
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_CLOUD_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'ssl_cert_reqs': ssl.CERT_REQUIRED  # Verify Let's Encrypt cert
+            }
+        }
+    }
+}
+
+# Celery Configuration with Redis SSL
+CELERY_BROKER_URL = REDIS_CLOUD_URL
+CELERY_RESULT_BACKEND = REDIS_CLOUD_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery SSL Configuration (Let's Encrypt certificates are trusted)
+CELERY_REDIS_BACKEND_USE_SSL = {
+    'ssl_cert_reqs': ssl.CERT_REQUIRED
+}
+CELERY_BROKER_USE_SSL = {
+    'ssl_cert_reqs': ssl.CERT_REQUIRED
+}
+
+# MinIO/S3 Configuration for Multi-Project Setup
+AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL')
+AWS_S3_VERIFY = os.getenv('AWS_S3_VERIFY', 'True') == 'True'
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_ADDRESSING_STYLE = 'path'
+AWS_DEFAULT_ACL = None
+
+# Custom domain for static files (portfolio prefix for multi-project)
+PROJECT_NAME = 'django_starter'  # Change per project
+AWS_LOCATION = f'portfolio/{PROJECT_NAME}'  # Project-specific prefix
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_S3_ENDPOINT_URL.replace("https://", "")}/{AWS_STORAGE_BUCKET_NAME}'
+
+# Static files configuration
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Storage backends (Django 4.2+)
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+    },
+}
+
+# Additional S3 settings
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',  # Cache for 1 day
+}
+AWS_QUERYSTRING_AUTH = False  # No signed URLs for static files
+```
+
+#### Celery Configuration (celery.py)
+
+```python
+import os
+from celery import Celery
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_starter.settings')
+
+app = Celery('django_starter')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
+
+@app.task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
+```
+
+#### Requirements
+
+```txt
+Django>=4.2
+psycopg2-binary
+dj-database-url
+django-redis
+redis
+celery
+django-storages
+boto3
+```
+
+#### Deployment Commands
+
+```bash
+# Collect static files to MinIO
+python manage.py collectstatic --noinput
+
+# Run migrations
+python manage.py migrate
+
+# Start Django (production)
+gunicorn django_starter.wsgi:application --bind 0.0.0.0:8016
+
+# Start Celery worker
+celery -A django_starter worker --loglevel=info
+
+# Start Celery beat (if needed)
+celery -A django_starter beat --loglevel=info
+```
+
+#### Infrastructure Requirements
+
+All these services must be configured on your server:
+
+1. **PostgreSQL** with nginx TLS stream proxy on port 9552
+2. **Redis** with nginx TLS stream proxy on port 9551
+3. **MinIO API** with nginx HTTPS proxy at minioapi.arpansahu.space
+4. **Let's Encrypt SSL certificates** (automatically trusted by Python)
+
+See individual service documentation:
+- [PostgreSQL Setup](../03-postgres/README.md)
+- [Redis Setup](../05-redis/README.md)
+- [MinIO Setup](../08-minio/README.md)
+
+#### Verification
+
+```bash
+# Test Redis connection
+redis-cli -h redis.arpansahu.space -p 9551 -a your_redis_password --tls ping
+# Should return: PONG
+
+# Test MinIO access
+curl -I https://minioapi.arpansahu.space/your-bucket-name/portfolio/your_project/static/admin/css/base.css
+# Should return: HTTP/2 200
+
+# Test static file serving
+curl https://django-starter.arpansahu.space
+# CSS/JS should load from minioapi.arpansahu.space
+```
+
+#### Expected Celery Logs
+
+```
+[2026-02-03 14:42:59,941: INFO/MainProcess] Connected to rediss://:**@redis.arpansahu.space:9551//
+[2026-02-03 14:42:59,953: INFO/MainProcess] celery@django_starter ready.
+```
+
+#### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| 400 Bad Request from boto3 | Using Console URL instead of API | Use `minioapi.arpansahu.space`, not `minio.arpansahu.space` |
+| CSS not loading | Files not uploaded to MinIO | Run `collectstatic`, check MinIO bucket |
+| Redis SSL connection failed | Certificate verification issue | Use `ssl.CERT_REQUIRED` (Let's Encrypt is trusted) |
+| Celery can't connect to Redis | Wrong URL or missing TLS proxy | Use `rediss://` scheme, ensure nginx stream proxy on 9551 |
+| collectstatic slow/fails | Network issues or wrong credentials | Check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY |
 
 ---
 

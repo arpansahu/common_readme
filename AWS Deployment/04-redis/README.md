@@ -683,3 +683,122 @@ sudo nginx -T | grep -A 20 "stream {"
 1. Redis only accessible on localhost
 2. Nginx provides TLS encryption for external access
 3. Password authentication required for all connections
+
+---
+
+## Django Integration with Redis TLS
+
+### Environment Variables
+
+```env
+# Redis with TLS (rediss:// scheme)
+REDIS_CLOUD_URL=rediss://:your_redis_password@redis.arpansahu.space:9551
+```
+
+### Django Settings (settings.py)
+
+#### Cache Configuration
+
+```python
+import ssl
+import os
+
+REDIS_CLOUD_URL = os.getenv('REDIS_CLOUD_URL')
+
+# Django Cache with Redis TLS
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_CLOUD_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'ssl_cert_reqs': ssl.CERT_REQUIRED  # Verify Let's Encrypt cert
+            }
+        }
+    }
+}
+```
+
+#### Celery Configuration
+
+```python
+# Celery broker and result backend
+CELERY_BROKER_URL = REDIS_CLOUD_URL
+CELERY_RESULT_BACKEND = REDIS_CLOUD_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery SSL Configuration
+CELERY_REDIS_BACKEND_USE_SSL = {
+    'ssl_cert_reqs': ssl.CERT_REQUIRED  # Verify SSL certificates
+}
+CELERY_BROKER_USE_SSL = {
+    'ssl_cert_reqs': ssl.CERT_REQUIRED  # Verify SSL certificates
+}
+```
+
+### Celery App (celery.py)
+
+```python
+import os
+from celery import Celery
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
+
+app = Celery('your_project')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
+
+@app.task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
+```
+
+### Requirements
+
+```txt
+django-redis>=5.2.0
+redis>=4.5.0
+celery>=5.2.0
+```
+
+### Verification
+
+```bash
+# Test Django cache
+python manage.py shell
+>>> from django.core.cache import cache
+>>> cache.set('test_key', 'test_value', 300)
+>>> cache.get('test_key')
+'test_value'
+
+# Expected Celery worker logs
+[INFO/MainProcess] Connected to rediss://:**@redis.arpansahu.space:9551//
+[INFO/MainProcess] celery@your_project ready.
+```
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `[SSL: CERTIFICATE_VERIFY_FAILED]` | Wrong SSL verification setting | Use `ssl.CERT_REQUIRED` - Let's Encrypt certs are trusted |
+| Connection timeout | Wrong port or host | Use port 9551, ensure nginx stream proxy is running |
+| Authentication failed | Wrong password | Check REDIS_CLOUD_URL password matches Redis setup |
+| Connection refused | Redis not running | Check: `docker ps \| grep redis` |
+
+### SSL Certificate Verification
+
+**Important:** Use `ssl.CERT_REQUIRED` (secure) instead of `ssl.CERT_NONE` (insecure).
+
+Let's Encrypt certificates at `/etc/nginx/ssl/arpansahu.space/` are automatically trusted by Python's SSL library. No need to disable certificate verification.
+
+```python
+# ✅ CORRECT - Secure with certificate verification
+'ssl_cert_reqs': ssl.CERT_REQUIRED
+
+# ❌ WRONG - Insecure, don't use in production
+'ssl_cert_reqs': ssl.CERT_NONE
+```

@@ -18,6 +18,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+JENKINS_CLI="${SCRIPT_DIR}/jenkins-cli.jar"
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║     Upload Project .env to Jenkins Credentials        ║${NC}"
@@ -32,6 +33,9 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 source "$ENV_FILE"
+
+# Remove trailing slash from JENKINS_URL if present
+JENKINS_URL="${JENKINS_URL%/}"
 
 # Validate Jenkins credentials loaded
 if [ -z "$JENKINS_URL" ] || [ -z "$JENKINS_USER" ] || [ -z "$JENKINS_API_TOKEN" ]; then
@@ -129,7 +133,7 @@ fi
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 
 # Confirm upload
-read -p "Upload this to Jenkins as '${PROJECT_NAME}_env_file'? (y/n): " CONFIRM
+read -p "Upload this to Jenkins as '${PROJECT_NAME}_env_file'? (y/n): " CONFIRM || CONFIRM="y"
 if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     echo -e "${YELLOW}Upload cancelled${NC}"
     rm -f "$TEMP_ENV_FILE"
