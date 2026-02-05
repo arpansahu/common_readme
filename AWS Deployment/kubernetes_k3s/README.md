@@ -489,3 +489,311 @@ For issues:
 3. View agent logs: `kubectl logs -n portainer -l app=portainer-agent`
 4. [K3s GitHub Issues](https://github.com/k3s-io/k3s/issues)
 5. [Portainer Community Forums](https://www.portainer.io/community)
+
+---
+
+## SSL Certificates for Kubernetes
+
+### Overview
+
+For Kubernetes deployments requiring SSL certificates (Java apps like Kafka, Ingress with TLS), certificates from nginx can be converted to Kubernetes secrets and Java keystores.
+
+### Architecture
+
+```
+nginx SSL Certificates (/etc/nginx/ssl/arpansahu.space/)
+    ↓
+Java Keystore Generation (for apps like Kafka)
+    ↓
+Kubernetes Secrets (TLS + Keystore)
+    ↓
+Pods mount secrets as volumes
+```
+
+### Automated Keystore Renewal & Jenkins Upload
+
+See [`keystore-renewal-and-upload-to-jenkins.sh`](./keystore-renewal-and-upload-to-jenkins.sh) for complete automation.
+
+This script:
+1. ✅ Generates Java keystores from nginx certificates
+2. ✅ Creates/updates Kubernetes secrets
+3. ✅ Uploads certificates to Jenkins credentials
+4. ✅ Restarts affected pods
+
+**Prerequisites:**
+- nginx SSL certificates installed (see [AWS Deployment/02-nginx](../02-nginx/))
+- K3s cluster running
+- Jenkins API token configured
+
+**Run after certificate renewal:**
+```bash
+cd "AWS Deployment/kubernetes_k3s"
+chmod +x keystore-renewal-and-upload-to-jenkins.sh
+./keystore-renewal-and-upload-to-jenkins.sh
+```
+
+### Manual Certificate Deployment
+
+#### 1. Create TLS Secret
+
+```bash
+# Create TLS secret for Ingress
+sudo kubectl create secret tls arpansahu-tls \
+  --cert=/etc/nginx/ssl/arpansahu.space/fullchain.pem \
+  --key=/etc/nginx/ssl/arpansahu.space/privkey.pem \
+  --dry-run=client -o yaml | sudo kubectl apply -f -
+```
+
+#### 2. Generate Java Keystores (for Kafka/Java apps)
+
+```bash
+# Set passwords (use strong passwords)
+KEYSTORE_PASS="your-secure-password"
+TRUSTSTORE_PASS="your-secure-password"
+KEY_PASS="your-secure-password"
+
+# Create SSL directory
+sudo mkdir -p /var/lib/rancher/k3s/ssl/keystores
+cd /var/lib/rancher/k3s/ssl/keystores
+
+# Convert PEM to PKCS12
+sudo openssl pkcs12 -export \
+  -in /etc/nginx/ssl/arpansahu.space/fullchain.pem \
+  -inkey /etc/nginx/ssl/arpansahu.space/privkey.pem \
+  -out kafka.p12 \
+  -name kafka \
+  -passout pass:$KEYSTORE_PASS
+
+# Create keystore
+sudo keytool -importkeystore -noprompt \
+  -deststorepass $KEYSTORE_PASS \
+  -destkeypass $KEY_PASS \
+  -destkeystore kafka.keystore.jks \
+  -srckeystore kafka.p12 \
+  -srcstoretype PKCS12 \
+  -srcstorepass $KEYSTORE_PASS \
+  -alias kafka
+
+# Create truststore
+sudo rm -f kafka.truststore.jks
+sudo keytool -keystore kafka.truststore.jks \
+  -alias CARoot \
+  -import \
+  -file /etc/nginx/ssl/arpansahu.space/fullchain.pem \
+  -storepass $TRUSTSTORE_PASS \
+  -noprompt
+
+# Set permissions
+sudo chmod 644 *.jks
+```
+
+#### 3. Create Keystore Secret
+
+```bash
+sudo kubectl create secret generic kafka-ssl-keystore \
+  --from-file=kafka.keystore.jks=/var/lib/rancher/k3s/ssl/keystores/kafka.keystore.jks \
+  --from-file=kafka.truststore.jks=/var/lib/rancher/k3s/ssl/keystores/kafka.truststore.jks \
+  --from-literal=keystore-password=$KEYSTORE_PASS \
+  --from-literal=truststore-password=$TRUSTSTORE_PASS \
+  --from-literal=key-password=$KEY_PASS \
+  --dry-run=client -o yaml | sudo kubectl apply -f -
+```
+
+### Using Certificates in Deployments
+
+#### Kafka Deployment Example
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: confluentinc/cp-kafka:7.8.0
+        env:
+        - name: KAFKA_SSL_KEYSTORE_LOCATION
+          value: /etc/kafka/secrets/kafka.keystore.jks
+        - name: KAFKA_SSL_KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-ssl-keystore
+              key: keystore-password
+        - name: KAFKA_SSL_KEY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-ssl-keystore
+              key: key-password
+        - name: KAFKA_SSL_TRUSTSTORE_LOCATION
+          value: /etc/kafka/secrets/kafka.truststore.jks
+        - name: KAFKA_SSL_TRUSTSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-ssl-keystore
+              key: truststore-password
+        volumeMounts:
+        - name: kafka-ssl
+          mountPath: /etc/kafka/secrets
+          readOnly: true
+      volumes:
+      - name: kafka-ssl
+        secret:
+          secretName: kafka-ssl-keystore
+```
+
+#### Ingress with TLS Example
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: default
+spec:
+  tls:
+  - hosts:
+    - app.arpansahu.space
+    secretName: arpansahu-tls
+  rules:
+  - host: app.arpansahu.space
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app-service
+            port:
+              number: 80
+```
+
+### Jenkins Credential Upload
+
+#### Via Jenkins UI
+
+1. Navigate to: https://jenkins.arpansahu.space
+2. **Manage Jenkins → Credentials → (global) → Add Credentials**
+3. Configure:
+   - **Kind:** Secret text
+   - **ID:** `kafka-ssl-ca-cert`
+   - **Secret:** Paste certificate content
+   - **Description:** `Kafka SSL CA Certificate for Kubernetes`
+
+**Get certificate:**
+```bash
+ssh server "cat /etc/nginx/ssl/arpansahu.space/fullchain.pem" | pbcopy
+```
+
+#### Using in Jenkinsfile
+
+```groovy
+pipeline {
+    agent any
+    
+    stages {
+        stage('Deploy to K8s') {
+            steps {
+                withCredentials([string(credentialsId: 'kafka-ssl-ca-cert', variable: 'KAFKA_CERT')]) {
+                    sh '''
+                        # Create secret in K8s
+                        echo "$KAFKA_CERT" > kafka-cert.pem
+                        
+                        kubectl create secret generic kafka-ssl \
+                            --from-file=ca-cert.pem=kafka-cert.pem \
+                            --dry-run=client -o yaml | kubectl apply -f -
+                        
+                        rm kafka-cert.pem
+                    '''
+                }
+            }
+        }
+    }
+}
+```
+
+### Monitoring
+
+#### Check Secrets
+
+```bash
+# List secrets
+sudo kubectl get secrets
+
+# Describe TLS secret
+sudo kubectl describe secret arpansahu-tls
+
+# Check keystore secret
+sudo kubectl get secret kafka-ssl-keystore -o yaml
+
+# Verify certificate expiry
+sudo kubectl get secret arpansahu-tls -o jsonpath='{.data.tls\.crt}' | \
+  base64 -d | openssl x509 -noout -dates
+```
+
+#### Verify Pods Using Secrets
+
+```bash
+# Check pod status
+sudo kubectl get pods
+
+# View pod logs
+sudo kubectl logs deployment/kafka
+
+# Exec into pod
+sudo kubectl exec -it deployment/kafka -- ls /etc/kafka/secrets/
+```
+
+### Troubleshooting
+
+**Secrets not updating:**
+- K8s doesn't auto-restart pods when secrets update
+- Force restart: `sudo kubectl rollout restart deployment/kafka`
+
+**Permission errors:**
+- Ensure keystores have correct permissions (644)
+- Check pod security contexts
+
+**Certificate mismatch:**
+- Verify keystore was generated from correct PEM files
+- Check keystore password matches secret
+
+### Automation Integration
+
+To integrate with certificate renewal automation:
+
+1. Run SSL renewal setup (nginx):
+```bash
+cd "AWS Deployment/02-nginx"
+./ssl-renewal-automation.sh
+```
+
+2. Add K3s keystore renewal to deploy script:
+```bash
+# Edit ~/deploy_certs.sh to include:
+if command -v kubectl &> /dev/null; then
+    echo "Updating K8s certificates..."
+    cd "AWS Deployment/kubernetes_k3s"
+    ./keystore-renewal-and-upload-to-jenkins.sh
+fi
+```
+
+### Security Notes
+
+1. **Secret Encryption:** Enable encryption at rest for K3s secrets
+2. **RBAC:** Limit secret access to necessary service accounts
+3. **Passwords:** Use strong keystore passwords
+4. **Rotation:** Certificates auto-renew every 90 days
+5. **Backups:** Include secrets in K3s backups
+
+---

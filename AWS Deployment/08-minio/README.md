@@ -253,6 +253,94 @@ For fine-grained control, create a custom policy:
 
 Apply via Console: **Buckets** → Select bucket → **Access Policy** → **Add Custom Policy**
 
+#### Automated Bucket Policy Application
+
+For easier policy management, use the included scripts:
+
+**1. Create Policy File**
+
+Copy the example and customize for your bucket:
+
+```bash
+# Copy template
+cp minio_bucket_policy.json.example minio_bucket_policy.json
+
+# Edit to match your bucket name and paths
+nano minio_bucket_policy.json
+```
+
+Example policy for multi-project setup:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {"AWS": ["*"]},
+      "Action": ["s3:GetObject"],
+      "Resource": [
+        "arn:aws:s3:::arpansahu-one-bucket/portfolio/*/static/*",
+        "arn:aws:s3:::arpansahu-one-bucket/portfolio/*/media/*"
+      ]
+    }
+  ]
+}
+```
+
+**2. Update .env File**
+
+Ensure your `.env` contains:
+
+```env
+MINIO_ROOT_USER=arpansahu
+MINIO_ROOT_PASSWORD=your_password_here
+AWS_STORAGE_BUCKET_NAME=arpansahu-one-bucket
+MINIO_ENDPOINT=https://minioapi.arpansahu.space
+POLICY_FILE=minio_bucket_policy.json
+```
+
+**3. Apply Policy Using Script**
+
+```bash
+# Option 1: Interactive script (recommended)
+chmod +x apply_minio_policy.sh
+./apply_minio_policy.sh
+
+# Option 2: Python script
+pip install boto3 python-dotenv
+python3 apply_policy.py
+```
+
+**Available Methods:**
+
+| Method | Tool Required | Best For |
+|--------|---------------|----------|
+| **MinIO Client (mc)** | `brew install minio/stable/mc` | Quick setup, simple policies |
+| **AWS CLI** | `brew install awscli` | AWS compatibility, automation |
+| **Python (boto3)** | `pip install boto3` | Complex policies, validation |
+
+**Verify Policy Applied:**
+
+```bash
+# Using mc
+mc anonymous get myminio/arpansahu-one-bucket
+
+# Using AWS CLI
+aws --endpoint-url=https://minioapi.arpansahu.space \
+    s3api get-bucket-policy \
+    --bucket arpansahu-one-bucket
+
+# Test public access
+curl https://minioapi.arpansahu.space/arpansahu-one-bucket/portfolio/django_starter/static/test.txt
+```
+
+**Security Notes:**
+- ✅ Scripts use environment variables (safe to commit)
+- ✅ Never commit `.env` or `minio_bucket_policy.json` with real credentials
+- ✅ `.gitignore` includes these files by default
+- ✅ Use `.example` files as templates
+
 #### Path-Based Policy (Single Bucket with Multiple Access Levels)
 
 For **one bucket** with different paths having different access:
@@ -1259,6 +1347,10 @@ All deployment files are in: `AWS Deployment/Minio/`
 | `fix-websocket.sh` | Fixes WebSocket connection issues |
 | `nginx-console.conf` | Standalone Console nginx config |
 | `nginx-api.conf` | Standalone API nginx config |
+| `apply_minio_policy.sh` | Automated bucket policy application script |
+| `apply_policy.py` | Python script for bucket policy management |
+| `minio_bucket_policy.json.example` | Template for bucket policy |
+| `minio_bucket_policy.json` | Actual bucket policy (not in git) |
 | `README.md` | This documentation |
 
 **On Server:**

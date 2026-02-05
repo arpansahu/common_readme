@@ -48,16 +48,17 @@ sudo mkdir -p /etc/nginx/ssl/$DOMAIN
 
 ~/.acme.sh/acme.sh --install-cert \
   -d "$DOMAIN" \
-  -d "*.$DOMAIN" \
+  --ecc \
   --key-file /etc/nginx/ssl/$DOMAIN/privkey.pem \
   --fullchain-file /etc/nginx/ssl/$DOMAIN/fullchain.pem \
   --reloadcmd "systemctl reload nginx"
 
-echo -e "${YELLOW}Step 5: Setting up auto-renewal${NC}"
+echo -e "${YELLOW}Step 5: Setting up auto-renewal cron${NC}"
 crontab -l > /tmp/mycron 2>/dev/null || true
 if ! grep -q "acme.sh --cron" /tmp/mycron; then
     echo "0 0 * * * ~/.acme.sh/acme.sh --cron --home ~/.acme.sh > /dev/null" >> /tmp/mycron
     crontab /tmp/mycron
+    echo "✅ Cron job configured"
 fi
 rm /tmp/mycron
 
@@ -67,9 +68,19 @@ echo -e "Files:"
 echo -e "  - fullchain.pem (certificate)"
 echo -e "  - privkey.pem (private key)"
 echo ""
-echo -e "${YELLOW}Auto-renewal:${NC} Configured via cron (daily check)"
+echo -e "${YELLOW}Auto-renewal:${NC}"
+echo -e "  - Cron: Daily check at midnight"
+echo -e "  - Certificate renews automatically ~60 days before expiry"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo "1. Update nginx configs to use SSL certificate"
 echo "2. Test: sudo nginx -t"
 echo "3. Reload: sudo systemctl reload nginx"
+echo ""
+echo "4. (IMPORTANT) Setup automated certificate renewal:"
+echo "   cd 'AWS Deployment/02-nginx'"
+echo "   chmod +x ssl-renewal-automation.sh"
+echo "   ./ssl-renewal-automation.sh"
+echo ""
+echo "5. For Kubernetes SSL automation:"
+echo "   See: AWS Deployment/kubernetes_k3s/README.md"

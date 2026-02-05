@@ -1,0 +1,25 @@
+# Environment variables with credentials
+.env
+
+# Bucket policy with actual bucket names
+minio_bucket_policy.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
