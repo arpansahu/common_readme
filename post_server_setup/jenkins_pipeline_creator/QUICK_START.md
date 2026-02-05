@@ -23,15 +23,15 @@ nano .env.jenkins
 Add your credentials:
 ```bash
 JENKINS_URL=https://jenkins.arpansahu.space
-JENKINS_USER=your_username
+JENKINS_USER=admin
 JENKINS_API_TOKEN=your_api_token_here
 JENKINS_CLI=/tmp/jenkins-cli.jar
 ```
 
 **Get API Token:**
-1. Go to Jenkins → Click your username (top right) → Configure
-2. Under "API Token" → Click "Add new Token"
-3. Give it a name → Click "Generate"
+1. Go to Jenkins → People → admin → Configure
+2. Option A: Click "Show Legacy API Token..." (recommended for CLI)
+3. Option B: Under "API Token" → Click "Add new Token" → Generate
 4. Copy token to `.env.jenkins`
 
 ### Step 2: Run the Script

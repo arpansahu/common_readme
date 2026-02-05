@@ -75,13 +75,21 @@ Or use the automated installer:
 2. Edit `.env.jenkins` with your Jenkins credentials:
    ```bash
    JENKINS_URL=https://jenkins.arpansahu.space
-   JENKINS_USER=your_username
+   JENKINS_USER=admin
    JENKINS_API_TOKEN=your_api_token_here
    JENKINS_CLI=/tmp/jenkins-cli.jar
    ```
 
 3. Generate Jenkins API Token:
-   - Go to: Jenkins → User (top right) → Configure
+   
+   **Option 1: Legacy API Token (Recommended for CLI)**
+   - Go to: Jenkins → People → admin → Configure
+   - Scroll to "API Token" section
+   - Click "Show Legacy API Token..." button
+   - Copy the token to `.env.jenkins`
+   
+   **Option 2: Generate New API Token**
+   - Go to: Jenkins → People → admin → Configure
    - Under "API Token", click "Add new Token"
    - Give it a name (e.g., "CLI Access")
    - Click "Generate"
