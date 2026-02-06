@@ -535,13 +535,13 @@ chmod +x 1_renew_k3s_ssl_keystores.sh
 
 [`2_upload_keystores_to_minio.sh`](./2_upload_keystores_to_minio.sh) - Uploads certificates to MinIO for Django projects
 
-**Purpose:** Make SSL certificates available for Django projects to dynamically fetch and cache
+**Purpose:** Make SSL certificates securely available for Django projects to dynamically fetch and cache
 
 **What it does:**
-1. ✅ Uploads `fullchain.pem` to MinIO
-2. ✅ Uploads `kafka.keystore.jks` to MinIO
-3. ✅ Uploads `kafka.truststore.jks` to MinIO
-4. ✅ Sets public read permissions
+1. ✅ Uploads `fullchain.pem` to MinIO (private path)
+2. ✅ Uploads `kafka.keystore.jks` to MinIO (private path)
+3. ✅ Uploads `kafka.truststore.jks` to MinIO (private path)
+4. ✅ Requires authentication to access (secure storage)
 
 **Prerequisites:**
 - MinIO client (`mc`) installed
@@ -556,19 +556,20 @@ chmod +x 2_upload_keystores_to_minio.sh
 ```
 
 **Files uploaded to:**
-- `s3://arpansahu-one-bucket/keystores/kafka/fullchain.pem`
-- `s3://arpansahu-one-bucket/keystores/kafka/kafka.keystore.jks`
-- `s3://arpansahu-one-bucket/keystores/kafka/kafka.truststore.jks`
+- `s3://arpansahu-one-bucket/keystores/private/kafka/fullchain.pem`
+- `s3://arpansahu-one-bucket/keystores/private/kafka/kafka.keystore.jks`
+- `s3://arpansahu-one-bucket/keystores/private/kafka/kafka.truststore.jks`
 
 **Django integration:**
 ```python
 # common_utils/kafka_ssl.py
 import boto3
 from functools import lru_cache
+from django.conf import settings
 
 @lru_cache(maxsize=1)
 def get_kafka_ssl_cert():
-    """Fetch latest SSL certificate from MinIO"""
+    """Fetch latest SSL certificate from MinIO (authenticated)"""
     s3 = boto3.client('s3',
         endpoint_url='https://minioapi.arpansahu.space',
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -576,7 +577,7 @@ def get_kafka_ssl_cert():
     )
     obj = s3.get_object(
         Bucket='arpansahu-one-bucket',
-        Key='keystores/kafka/fullchain.pem'
+        Key='keystores/private/kafka/fullchain.pem'
     )
     return obj['Body'].read().decode()
 

@@ -19,7 +19,7 @@ CERT_PATH="${CERT_PATH:-/etc/nginx/ssl/arpansahu.space}"
 K3S_SSL_DIR="${K3S_SSL_DIR:-/var/lib/rancher/k3s/ssl/keystores}"
 MINIO_ALIAS="${MINIO_ALIAS:-minio}"
 MINIO_BUCKET="${MINIO_BUCKET:-arpansahu-one-bucket}"
-MINIO_KEYSTORE_PATH="${MINIO_KEYSTORE_PATH:-keystores/kafka}"
+MINIO_KEYSTORE_PATH="${MINIO_KEYSTORE_PATH:-keystores/private/kafka}"
 
 # Verify prerequisites
 if ! command -v mc &> /dev/null; then
@@ -93,12 +93,12 @@ mc cp "$TEMP_DIR/kafka.truststore.jks" \
 
 echo "✅ Truststore uploaded: $MINIO_KEYSTORE_PATH/kafka.truststore.jks"
 
-echo -e "${YELLOW}Step 3: Setting public read permissions${NC}"
+echo -e "${YELLOW}Step 3: Verifying private access${NC}"
 
-# Make files publicly readable (already covered by bucket policy)
-mc anonymous set download "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_KEYSTORE_PATH"
+# Remove public access if it was set before
+mc anonymous set none "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_KEYSTORE_PATH" 2>/dev/null || true
 
-echo "✅ Public read access enabled"
+echo "✅ Files are private (authentication required)"
 
 echo -e "${YELLOW}Step 4: Verifying uploads${NC}"
 
