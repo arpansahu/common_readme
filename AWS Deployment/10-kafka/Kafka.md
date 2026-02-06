@@ -448,7 +448,7 @@ docker exec kafka-kraft kafka-consumer-groups --bootstrap-server localhost:9092 
 5. **Regular backups** - Backup Kafka data and configuration
 6. **Update regularly** - Keep Kafka version up-to-date for security patches
 7. **Resource limits** - Set Docker CPU and memory limits
-8. **TLS certificate renewal** - Automate Let's Encrypt renewal and keystore regeneration
+8. **TLS certificate renewal** - **Fully automated**. See [SSL Automation](../ssl-automation/README.md) for details
 
 ---
 
