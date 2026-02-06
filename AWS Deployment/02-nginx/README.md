@@ -381,8 +381,6 @@ openssl x509 -in /etc/nginx/ssl/arpansahu.space/fullchain.pem -noout -dates
 ssh arpansahu@arpansahu.space '~/deploy_certs.sh'
 ```
 
-**Legacy script:** [`ssl-renewal-automation.sh`](./ssl-renewal-automation.sh) (deprecated - use centralized automation instead)
-
 ---
 
 ### Backup Configuration
