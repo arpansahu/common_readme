@@ -1,0 +1,9 @@
+# Allow arpansahu to run K3s SSL renewal commands without password
+arpansahu ALL=(ALL) NOPASSWD: /usr/local/bin/kubectl *
+arpansahu ALL=(ALL) NOPASSWD: /bin/mkdir -p /var/lib/rancher/k3s/ssl/keystores
+arpansahu ALL=(ALL) NOPASSWD: /bin/cp /etc/nginx/ssl/arpansahu.space/* *
+arpansahu ALL=(ALL) NOPASSWD: /bin/chmod * *
+arpansahu ALL=(ALL) NOPASSWD: /usr/bin/keytool *
+arpansahu ALL=(ALL) NOPASSWD: /usr/bin/openssl *
+arpansahu ALL=(ALL) NOPASSWD: /bin/rm *
+arpansahu ALL=(ALL) NOPASSWD: /usr/bin/apt-get *
