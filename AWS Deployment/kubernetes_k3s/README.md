@@ -496,245 +496,38 @@ For issues:
 
 ### Overview
 
-For Kubernetes deployments requiring SSL certificates (Java apps like Kafka, Ingress with TLS), certificates from nginx can be converted to Kubernetes secrets and Java keystores.
+K3s requires SSL certificates for TLS Ingress and secure pod communication (Java apps, Kafka, etc.). Certificates are **automatically managed** - see [SSL Automation Documentation](../ssl-automation/README.md).
 
-### Architecture
+### Quick Reference
 
-```
-nginx SSL Certificates (/etc/nginx/ssl/arpansahu.space/)
-    ↓
-Java Keystore Generation
-    ├─→ Kubernetes Secrets (for K3s pods)
-    └─→ MinIO Storage (for Django projects)
-```
+**Automated Certificate Management:**
+- ✅ K3s secrets updated after SSL renewal (arpansahu-tls, kafka-ssl-keystore)
+- ✅ Keystores stored in `/var/lib/rancher/k3s/ssl/keystores/`
+- ✅ Uploaded to MinIO for Django projects
+- ✅ See [Django Integration Guide](./DJANGO_INTEGRATION.md)
 
-### Automated SSL Certificate Management
-
-Two scripts for different purposes:
-
-#### 1️⃣ K3s SSL Keystore Renewal
-
-[`1_renew_k3s_ssl_keystores.sh`](./1_renew_k3s_ssl_keystores.sh) - Updates Kubernetes cluster certificates
-
-**Purpose:** Renew SSL certificates for K3s cluster (Ingress, Kafka pods, etc.)
-
-**What it does:**
-1. ✅ Generates Java keystores from nginx certificates
-2. ✅ Creates/updates Kubernetes TLS secret (`arpansahu-tls`)
-3. ✅ Creates/updates Kubernetes keystore secret (`kafka-ssl-keystore`)
-4. ✅ Stores keystores in `/var/lib/rancher/k3s/ssl/keystores/`
-
-**Run after nginx certificate renewal:**
+**Manual testing:**
 ```bash
-cd "AWS Deployment/kubernetes_k3s"
-chmod +x 1_renew_k3s_ssl_keystores.sh
-./1_renew_k3s_ssl_keystores.sh
-```
-
-#### 2️⃣ Upload Keystores to MinIO
-
-[`2_upload_keystores_to_minio.sh`](./2_upload_keystores_to_minio.sh) - Uploads certificates to MinIO for Django projects
-
-**Purpose:** Make SSL certificates securely available for Django projects to dynamically fetch and cache
-
-**What it does:**
-1. ✅ Uploads `fullchain.pem` to MinIO (private path)
-2. ✅ Uploads `kafka.keystore.jks` to MinIO (private path)
-3. ✅ Uploads `kafka.truststore.jks` to MinIO (private path)
-4. ✅ Requires authentication to access (secure storage)
-
-**Prerequisites:**
-- MinIO client (`mc`) installed
-- MinIO alias configured: `mc alias set minio https://minioapi.arpansahu.space ACCESS_KEY SECRET_KEY`
-- K3s keystores generated (run script #1 first)
-
-**Run after keystore generation:**
-```bash
-cd "AWS Deployment/kubernetes_k3s"
-chmod +x 2_upload_keystores_to_minio.sh
-./2_upload_keystores_to_minio.sh
-```
-
-**Files uploaded to:**
-- `s3://arpansahu-one-bucket/keystores/private/kafka/fullchain.pem`
-- `s3://arpansahu-one-bucket/keystores/private/kafka/kafka.keystore.jks`
-- `s3://arpansahu-one-bucket/keystores/private/kafka/kafka.truststore.jks`
-
-**Django integration:**
-```python
-# common_utils/kafka_ssl.py
-import boto3
-from functools import lru_cache
-from django.conf import settings
-
-@lru_cache(maxsize=1)
-def get_kafka_ssl_cert():
-    """Fetch latest SSL certificate from MinIO (authenticated)"""
-    s3 = boto3.client('s3',
-        endpoint_url='https://minioapi.arpansahu.space',
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
-    )
-    obj = s3.get_object(
-        Bucket='arpansahu-one-bucket',
-        Key='keystores/private/kafka/fullchain.pem'
-    )
-    return obj['Body'].read().decode()
-
-# Usage in Kafka connection
-ssl_context = ssl.create_default_context()
-ssl_context.load_verify_locations(cadata=get_kafka_ssl_cert())
-```
-
-#### Automation
-
-SSL certificate renewal and distribution is **fully automated**. See [SSL Automation Documentation](../ssl-automation/README.md) for complete details.
-
-**What happens automatically:**
-- ✅ K3s certificates updated after SSL renewal
-- ✅ Kubernetes secrets refreshed (arpansahu-tls, kafka-ssl-keystore)
-- ✅ Keystores uploaded to MinIO for Django projects
-
-**Manual execution (testing):**
-```bash
+# On server
 cd ~/k3s_scripts
-./1_renew_k3s_ssl_keystores.sh
-./2_upload_keystores_to_minio.sh
-```
-
-### Manual Certificate Deployment
-
-#### 1. Create TLS Secret
-
-```bash
-# Create TLS secret for Ingress
-sudo kubectl create secret tls arpansahu-tls \
-  --cert=/etc/nginx/ssl/arpansahu.space/fullchain.pem \
-  --key=/etc/nginx/ssl/arpansahu.space/privkey.pem \
-  --dry-run=client -o yaml | sudo kubectl apply -f -
-```
-
-#### 2. Generate Java Keystores (for Kafka/Java apps)
-
-```bash
-# Set passwords (use strong passwords)
-KEYSTORE_PASS="your-secure-password"
-TRUSTSTORE_PASS="your-secure-password"
-KEY_PASS="your-secure-password"
-
-# Create SSL directory
-sudo mkdir -p /var/lib/rancher/k3s/ssl/keystores
-cd /var/lib/rancher/k3s/ssl/keystores
-
-# Convert PEM to PKCS12
-sudo openssl pkcs12 -export \
-  -in /etc/nginx/ssl/arpansahu.space/fullchain.pem \
-  -inkey /etc/nginx/ssl/arpansahu.space/privkey.pem \
-  -out kafka.p12 \
-  -name kafka \
-  -passout pass:$KEYSTORE_PASS
-
-# Create keystore
-sudo keytool -importkeystore -noprompt \
-  -deststorepass $KEYSTORE_PASS \
-  -destkeypass $KEY_PASS \
-  -destkeystore kafka.keystore.jks \
-  -srckeystore kafka.p12 \
-  -srcstoretype PKCS12 \
-  -srcstorepass $KEYSTORE_PASS \
-  -alias kafka
-
-# Create truststore
-sudo rm -f kafka.truststore.jks
-sudo keytool -keystore kafka.truststore.jks \
-  -alias CARoot \
-  -import \
-  -file /etc/nginx/ssl/arpansahu.space/fullchain.pem \
-  -storepass $TRUSTSTORE_PASS \
-  -noprompt
-
-# Set permissions
-sudo chmod 644 *.jks
-```
-
-#### 3. Create Keystore Secret
-
-```bash
-sudo kubectl create secret generic kafka-ssl-keystore \
-  --from-file=kafka.keystore.jks=/var/lib/rancher/k3s/ssl/keystores/kafka.keystore.jks \
-  --from-file=kafka.truststore.jks=/var/lib/rancher/k3s/ssl/keystores/kafka.truststore.jks \
-  --from-literal=keystore-password=$KEYSTORE_PASS \
-  --from-literal=truststore-password=$TRUSTSTORE_PASS \
-  --from-literal=key-password=$KEY_PASS \
-  --dry-run=client -o yaml | sudo kubectl apply -f -
+./1_renew_k3s_ssl_keystores.sh   # Update K3s secrets
+./2_upload_keystores_to_minio.sh # Upload to MinIO
 ```
 
 ### Using Certificates in Deployments
 
-#### Kafka Deployment Example
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kafka
-  namespace: default
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: kafka
-  template:
-    metadata:
-      labels:
-        app: kafka
-    spec:
-      containers:
-      - name: kafka
-        image: confluentinc/cp-kafka:7.8.0
-        env:
-        - name: KAFKA_SSL_KEYSTORE_LOCATION
-          value: /etc/kafka/secrets/kafka.keystore.jks
-        - name: KAFKA_SSL_KEYSTORE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: kafka-ssl-keystore
-              key: keystore-password
-        - name: KAFKA_SSL_KEY_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: kafka-ssl-keystore
-              key: key-password
-        - name: KAFKA_SSL_TRUSTSTORE_LOCATION
-          value: /etc/kafka/secrets/kafka.truststore.jks
-        - name: KAFKA_SSL_TRUSTSTORE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: kafka-ssl-keystore
-              key: truststore-password
-        volumeMounts:
-        - name: kafka-ssl
-          mountPath: /etc/kafka/secrets
-          readOnly: true
-      volumes:
-      - name: kafka-ssl
-        secret:
-          secretName: kafka-ssl-keystore
-```
-
-#### Ingress with TLS Example
+#### Ingress with TLS
 
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: app-ingress
-  namespace: default
 spec:
   tls:
   - hosts:
     - app.arpansahu.space
-    secretName: arpansahu-tls
+    secretName: arpansahu-tls  # Auto-managed secret
   rules:
   - host: app.arpansahu.space
     http:
@@ -748,106 +541,62 @@ spec:
               number: 80
 ```
 
-### Jenkins Credential Upload
+#### Kafka Pod with SSL
 
-#### Via Jenkins UI
-
-1. Navigate to: https://jenkins.arpansahu.space
-2. **Manage Jenkins → Credentials → (global) → Add Credentials**
-3. Configure:
-   - **Kind:** Secret text
-   - **ID:** `kafka-ssl-ca-cert`
-   - **Secret:** Paste certificate content
-   - **Description:** `Kafka SSL CA Certificate for Kubernetes`
-
-**Get certificate:**
-```bash
-ssh server "cat /etc/nginx/ssl/arpansahu.space/fullchain.pem" | pbcopy
-```
-
-#### Using in Jenkinsfile
-
-```groovy
-pipeline {
-    agent any
-    
-    stages {
-        stage('Deploy to K8s') {
-            steps {
-                withCredentials([string(credentialsId: 'kafka-ssl-ca-cert', variable: 'KAFKA_CERT')]) {
-                    sh '''
-                        # Create secret in K8s
-                        echo "$KAFKA_CERT" > kafka-cert.pem
-                        
-                        kubectl create secret generic kafka-ssl \
-                            --from-file=ca-cert.pem=kafka-cert.pem \
-                            --dry-run=client -o yaml | kubectl apply -f -
-                        
-                        rm kafka-cert.pem
-                    '''
-                }
-            }
-        }
-    }
-}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+spec:
+  template:
+    spec:
+      containers:
+      - name: kafka
+        image: confluentinc/cp-kafka:7.8.0
+        env:
+        - name: KAFKA_SSL_KEYSTORE_LOCATION
+          value: /etc/kafka/secrets/kafka.keystore.jks
+        - name: KAFKA_SSL_KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-ssl-keystore  # Auto-managed secret
+              key: keystore-password
+        volumeMounts:
+        - name: kafka-ssl
+          mountPath: /etc/kafka/secrets
+          readOnly: true
+      volumes:
+      - name: kafka-ssl
+        secret:
+          secretName: kafka-ssl-keystore
 ```
 
 ### Monitoring
 
-#### Check Secrets
-
 ```bash
 # List secrets
-sudo kubectl get secrets
+kubectl get secrets
 
-# Describe TLS secret
-sudo kubectl describe secret arpansahu-tls
-
-# Check keystore secret
-sudo kubectl get secret kafka-ssl-keystore -o yaml
-
-# Verify certificate expiry
-sudo kubectl get secret arpansahu-tls -o jsonpath='{.data.tls\.crt}' | \
+# Check certificate expiry
+kubectl get secret arpansahu-tls -o jsonpath='{.data.tls\.crt}' | \
   base64 -d | openssl x509 -noout -dates
-```
 
-#### Verify Pods Using Secrets
-
-```bash
-# Check pod status
-sudo kubectl get pods
-
-# View pod logs
-sudo kubectl logs deployment/kafka
-
-# Exec into pod
-sudo kubectl exec -it deployment/kafka -- ls /etc/kafka/secrets/
+# View keystore secret
+kubectl describe secret kafka-ssl-keystore
 ```
 
 ### Troubleshooting
 
-**Secrets not updating:**
-- K8s doesn't auto-restart pods when secrets update
-- Force restart: `sudo kubectl rollout restart deployment/kafka`
+**Pods not using new certificates:**
+- Restart deployment: `kubectl rollout restart deployment/your-app`
+- K8s doesn't auto-reload secrets - manual restart required
 
-**Permission errors:**
-- Ensure keystores have correct permissions (644)
-- Check pod security contexts
+**Certificate verification failed:**
+- Check secret exists: `kubectl get secret arpansahu-tls`
+- Verify expiry date (see Monitoring above)
+- Force renewal: See [SSL Automation](../ssl-automation/README.md)
 
-**Certificate mismatch:**
-- Verify keystore was generated from correct PEM files
-- Check keystore password matches secret
-
-### Automation
-
-SSL certificate renewal is fully automated. See **[SSL Automation Documentation](../ssl-automation/README.md)** for complete setup and troubleshooting.
-
-### Security Notes
-
-1. **Secret Encryption:** Enable encryption at rest for K3s secrets
-2. **RBAC:** Limit secret access to necessary service accounts
-3. **Passwords:** Use strong keystore passwords
-4. **Rotation:** Certificates auto-renew every 90 days
-5. **Backups:** Include secrets in K3s backups
+**For complete automation details, troubleshooting, and manual procedures:** [SSL Automation Documentation](../ssl-automation/README.md)
 
 ---
