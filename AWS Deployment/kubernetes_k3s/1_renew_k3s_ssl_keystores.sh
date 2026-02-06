@@ -1,10 +1,9 @@
 #!/bin/bash
-# Kubernetes SSL Keystore Renewal and Jenkins Upload
+# Kubernetes SSL Keystore Renewal for K3s
 # This script:
 # 1. Generates Java keystores from nginx SSL certificates
-# 2. Creates/updates Kubernetes secrets
-# 3. Uploads certificates to Jenkins credentials
-# 4. Optionally restarts affected pods
+# 2. Creates/updates Kubernetes TLS and keystore secrets
+# 3. Updates local K3s cluster certificates
 
 set -e
 
@@ -14,17 +13,13 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo "=== Kubernetes SSL Keystore Renewal & Jenkins Upload ==="
+echo "=== K3s SSL Keystore Renewal ==="
 echo ""
 
 # Configuration
 CERT_PATH="${CERT_PATH:-/etc/nginx/ssl/arpansahu.space}"
 K3S_SSL_DIR="${K3S_SSL_DIR:-/var/lib/rancher/k3s/ssl/keystores}"
 KUBECONFIG="${KUBECONFIG:-/etc/rancher/k3s/k3s.yaml}"
-JENKINS_URL="${JENKINS_URL:-https://jenkins.arpansahu.space}"
-JENKINS_USER="${JENKINS_USER:-admin}"
-JENKINS_TOKEN="${JENKINS_TOKEN}"
-CREDENTIAL_ID="${CREDENTIAL_ID:-kafka-ssl-ca-cert}"
 
 # Keystore passwords (read from environment or use defaults)
 KEYSTORE_PASSWORD="${K3S_KEYSTORE_PASSWORD:-changeit}"
@@ -116,66 +111,7 @@ sudo kubectl create secret generic kafka-ssl-keystore \
 
 echo "✅ Keystore secret updated"
 
-# Upload to Jenkins
-if [ -n "$JENKINS_TOKEN" ]; then
-    echo -e "${YELLOW}Step 3: Uploading certificate to Jenkins${NC}"
-    
-    # Read certificate content
-    CERT_CONTENT=$(cat "$CERT_PATH/fullchain.pem")
-    
-    # Check if credential exists
-    CREDENTIAL_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" \
-        -u "$JENKINS_USER:$JENKINS_TOKEN" \
-        "$JENKINS_URL/credentials/store/system/domain/_/credential/$CREDENTIAL_ID/config.xml")
-    
-    if [ "$CREDENTIAL_EXISTS" = "200" ]; then
-        echo "Updating existing Jenkins credential..."
-        
-        # Create XML for updating
-        cat > /tmp/jenkins-cred.xml << EOF
-<org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl>
-  <scope>GLOBAL</scope>
-  <id>$CREDENTIAL_ID</id>
-  <description>Kafka SSL CA Certificate for Kubernetes (auto-updated)</description>
-  <secret>$CERT_CONTENT</secret>
-</org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl>
-EOF
-        
-        # Update credential
-        curl -X POST "$JENKINS_URL/credentials/store/system/domain/_/credential/$CREDENTIAL_ID/config.xml" \
-            -u "$JENKINS_USER:$JENKINS_TOKEN" \
-            --data-binary @/tmp/jenkins-cred.xml \
-            -H "Content-Type: application/xml"
-        
-        rm /tmp/jenkins-cred.xml
-        echo "✅ Jenkins credential updated"
-    else
-        echo "Creating new Jenkins credential..."
-        
-        # Create new credential via UI (simpler than XML creation)
-        echo ""
-        echo -e "${YELLOW}Manual Jenkins upload required:${NC}"
-        echo "1. Go to: $JENKINS_URL"
-        echo "2. Navigate: Manage Jenkins → Credentials → (global) → Add Credentials"
-        echo "3. Configure:"
-        echo "   Kind: Secret text"
-        echo "   ID: $CREDENTIAL_ID"
-        echo "   Secret: [paste certificate]"
-        echo "   Description: Kafka SSL CA Certificate for Kubernetes"
-        echo ""
-        echo "Certificate ready in: $CERT_PATH/fullchain.pem"
-        echo ""
-        echo "Quick copy command:"
-        echo "cat $CERT_PATH/fullchain.pem | pbcopy  # Mac"
-        echo "cat $CERT_PATH/fullchain.pem | xclip -selection clipboard  # Linux"
-    fi
-else
-    echo -e "${YELLOW}⚠️  Skipping Jenkins upload (JENKINS_TOKEN not set)${NC}"
-    echo "To enable Jenkins upload, set:"
-    echo "  export JENKINS_TOKEN='your-jenkins-api-token'"
-fi
-
-echo -e "${YELLOW}Step 4: Verifying secrets${NC}"
+echo -e "${YELLOW}Step 3: Verifying secrets${NC}"
 
 # Verify TLS secret
 if sudo kubectl get secret arpansahu-tls &> /dev/null; then
@@ -194,24 +130,20 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}SSL Keystore Renewal Complete!${NC}"
+echo -e "${GREEN}K3s SSL Keystore Renewal Complete!${NC}"
 echo ""
 echo -e "${YELLOW}What was updated:${NC}"
 echo "✅ Java keystores: $K3S_SSL_DIR/"
 echo "✅ Kubernetes TLS secret: arpansahu-tls"
 echo "✅ Kubernetes keystore secret: kafka-ssl-keystore"
-if [ -n "$JENKINS_TOKEN" ]; then
-    echo "✅ Jenkins credential: $CREDENTIAL_ID"
-fi
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
-echo "1. Restart pods using certificates:"
+echo "1. Upload to MinIO for Django projects:"
+echo "   ./2_upload_keystores_to_minio.sh"
+echo ""
+echo "2. Restart pods using certificates:"
 echo "   sudo kubectl rollout restart deployment/kafka"
 echo "   sudo kubectl rollout restart deployment/your-app"
-echo ""
-echo "2. Verify pods are using new certificates:"
-echo "   sudo kubectl logs deployment/kafka"
-echo "   sudo kubectl exec -it deployment/kafka -- ls /etc/kafka/secrets/"
 echo ""
 echo -e "${YELLOW}Monitoring:${NC}"
 echo "# Check certificate expiry"
@@ -219,11 +151,3 @@ echo "sudo kubectl get secret arpansahu-tls -o jsonpath='{.data.tls\.crt}' | bas
 echo ""
 echo "# Check keystore"
 echo "sudo keytool -list -v -keystore $K3S_SSL_DIR/kafka.keystore.jks -storepass $KEYSTORE_PASSWORD"
-echo ""
-echo -e "${YELLOW}Automation:${NC}"
-echo "To run automatically after certificate renewal:"
-echo "Add to ~/deploy_certs.sh:"
-echo "  if command -v kubectl &> /dev/null; then"
-echo "    cd 'AWS Deployment/kubernetes_k3s'"
-echo "    ./keystore-renewal-and-upload-to-jenkins.sh"
-echo "  fi"

@@ -503,33 +503,106 @@ For Kubernetes deployments requiring SSL certificates (Java apps like Kafka, Ing
 ```
 nginx SSL Certificates (/etc/nginx/ssl/arpansahu.space/)
     ↓
-Java Keystore Generation (for apps like Kafka)
-    ↓
-Kubernetes Secrets (TLS + Keystore)
-    ↓
-Pods mount secrets as volumes
+Java Keystore Generation
+    ├─→ Kubernetes Secrets (for K3s pods)
+    └─→ MinIO Storage (for Django projects)
 ```
 
-### Automated Keystore Renewal & Jenkins Upload
+### Automated SSL Certificate Management
 
-See [`keystore-renewal-and-upload-to-jenkins.sh`](./keystore-renewal-and-upload-to-jenkins.sh) for complete automation.
+Two scripts for different purposes:
 
-This script:
+#### 1️⃣ K3s SSL Keystore Renewal
+
+[`1_renew_k3s_ssl_keystores.sh`](./1_renew_k3s_ssl_keystores.sh) - Updates Kubernetes cluster certificates
+
+**Purpose:** Renew SSL certificates for K3s cluster (Ingress, Kafka pods, etc.)
+
+**What it does:**
 1. ✅ Generates Java keystores from nginx certificates
-2. ✅ Creates/updates Kubernetes secrets
-3. ✅ Uploads certificates to Jenkins credentials
-4. ✅ Restarts affected pods
+2. ✅ Creates/updates Kubernetes TLS secret (`arpansahu-tls`)
+3. ✅ Creates/updates Kubernetes keystore secret (`kafka-ssl-keystore`)
+4. ✅ Stores keystores in `/var/lib/rancher/k3s/ssl/keystores/`
 
-**Prerequisites:**
-- nginx SSL certificates installed (see [AWS Deployment/02-nginx](../02-nginx/))
-- K3s cluster running
-- Jenkins API token configured
-
-**Run after certificate renewal:**
+**Run after nginx certificate renewal:**
 ```bash
 cd "AWS Deployment/kubernetes_k3s"
-chmod +x keystore-renewal-and-upload-to-jenkins.sh
-./keystore-renewal-and-upload-to-jenkins.sh
+chmod +x 1_renew_k3s_ssl_keystores.sh
+./1_renew_k3s_ssl_keystores.sh
+```
+
+#### 2️⃣ Upload Keystores to MinIO
+
+[`2_upload_keystores_to_minio.sh`](./2_upload_keystores_to_minio.sh) - Uploads certificates to MinIO for Django projects
+
+**Purpose:** Make SSL certificates available for Django projects to dynamically fetch and cache
+
+**What it does:**
+1. ✅ Uploads `fullchain.pem` to MinIO
+2. ✅ Uploads `kafka.keystore.jks` to MinIO
+3. ✅ Uploads `kafka.truststore.jks` to MinIO
+4. ✅ Sets public read permissions
+
+**Prerequisites:**
+- MinIO client (`mc`) installed
+- MinIO alias configured: `mc alias set minio https://minioapi.arpansahu.space ACCESS_KEY SECRET_KEY`
+- K3s keystores generated (run script #1 first)
+
+**Run after keystore generation:**
+```bash
+cd "AWS Deployment/kubernetes_k3s"
+chmod +x 2_upload_keystores_to_minio.sh
+./2_upload_keystores_to_minio.sh
+```
+
+**Files uploaded to:**
+- `s3://arpansahu-one-bucket/keystores/kafka/fullchain.pem`
+- `s3://arpansahu-one-bucket/keystores/kafka/kafka.keystore.jks`
+- `s3://arpansahu-one-bucket/keystores/kafka/kafka.truststore.jks`
+
+**Django integration:**
+```python
+# common_utils/kafka_ssl.py
+import boto3
+from functools import lru_cache
+
+@lru_cache(maxsize=1)
+def get_kafka_ssl_cert():
+    """Fetch latest SSL certificate from MinIO"""
+    s3 = boto3.client('s3',
+        endpoint_url='https://minioapi.arpansahu.space',
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+    obj = s3.get_object(
+        Bucket='arpansahu-one-bucket',
+        Key='keystores/kafka/fullchain.pem'
+    )
+    return obj['Body'].read().decode()
+
+# Usage in Kafka connection
+ssl_context = ssl.create_default_context()
+ssl_context.load_verify_locations(cadata=get_kafka_ssl_cert())
+```
+
+#### Complete Automation
+
+Add both scripts to `~/deploy_certs.sh` for automatic execution after certificate renewal:
+
+```bash
+# At end of ~/deploy_certs.sh
+if command -v kubectl &> /dev/null; then
+    echo "Updating K3s SSL certificates..."
+    cd "$HOME/AWS Deployment/kubernetes_k3s"
+    
+    # Renew K3s keystores
+    ./1_renew_k3s_ssl_keystores.sh
+    
+    # Upload to MinIO for Django projects
+    ./2_upload_keystores_to_minio.sh
+    
+    echo "✅ K3s and MinIO certificates updated"
+fi
 ```
 
 ### Manual Certificate Deployment
