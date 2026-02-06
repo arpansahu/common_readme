@@ -58,22 +58,37 @@ fi
 
 echo -e "${YELLOW}Step 1: Uploading SSL certificate${NC}"
 
+# Create temp files that current user can read
+TEMP_DIR=$(mktemp -d)
+trap "rm -rf $TEMP_DIR" EXIT
+
+sudo cp "$CERT_PATH/fullchain.pem" "$TEMP_DIR/fullchain.pem"
+sudo chmod 644 "$TEMP_DIR/fullchain.pem"
+
 # Upload fullchain.pem
-sudo mc cp "$CERT_PATH/fullchain.pem" \
+mc cp "$TEMP_DIR/fullchain.pem" \
   "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_KEYSTORE_PATH/fullchain.pem"
 
 echo "✅ Certificate uploaded: $MINIO_KEYSTORE_PATH/fullchain.pem"
 
 echo -e "${YELLOW}Step 2: Uploading Java keystores${NC}"
 
+# Copy keystores to temp directory
+sudo cp "$K3S_SSL_DIR/kafka.keystore.jks" "$TEMP_DIR/kafka.keystore.jks"
+sudo chmod 644 "$TEMP_DIR/kafka.keystore.jks"
+
 # Upload keystore
-sudo mc cp "$K3S_SSL_DIR/kafka.keystore.jks" \
+mc cp "$TEMP_DIR/kafka.keystore.jks" \
   "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_KEYSTORE_PATH/kafka.keystore.jks"
 
 echo "✅ Keystore uploaded: $MINIO_KEYSTORE_PATH/kafka.keystore.jks"
 
+# Copy truststore to temp directory
+sudo cp "$K3S_SSL_DIR/kafka.truststore.jks" "$TEMP_DIR/kafka.truststore.jks"
+sudo chmod 644 "$TEMP_DIR/kafka.truststore.jks"
+
 # Upload truststore
-sudo mc cp "$K3S_SSL_DIR/kafka.truststore.jks" \
+mc cp "$TEMP_DIR/kafka.truststore.jks" \
   "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_KEYSTORE_PATH/kafka.truststore.jks"
 
 echo "✅ Truststore uploaded: $MINIO_KEYSTORE_PATH/kafka.truststore.jks"
