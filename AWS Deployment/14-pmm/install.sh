@@ -46,8 +46,8 @@ done
 echo ""
 echo "=== Step 1: Installing PMM Server (Docker) ==="
 
-# Create data directory
-mkdir -p /srv/pmm-data
+# Create data directory in home folder
+mkdir -p ~/pmm-data
 
 # Pull and run PMM Server
 docker pull percona/pmm-server:2
@@ -55,7 +55,7 @@ docker create \
     --name pmm-server \
     --restart always \
     -p 8443:443 \
-    -v /srv/pmm-data:/srv \
+    -v ~/pmm-data:/srv \
     -e DISABLE_TELEMETRY=1 \
     percona/pmm-server:2
 

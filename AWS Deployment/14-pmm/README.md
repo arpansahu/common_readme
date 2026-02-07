@@ -306,7 +306,7 @@ docker restart pmm-server
 docker stop pmm-server
 
 # Backup data directory
-sudo tar -czf pmm-backup-$(date +%Y%m%d).tar.gz /srv/pmm-data/
+tar -czf pmm-backup-$(date +%Y%m%d).tar.gz ~/pmm-data/
 
 # Start PMM Server
 docker start pmm-server
@@ -329,7 +329,7 @@ docker run -d \
   --name pmm-server \
   --restart always \
   -p 8443:443 \
-  -v /srv/pmm-data:/srv \
+  -v ~/pmm-data:/srv \
   -e DISABLE_TELEMETRY=1 \
   percona/pmm-server:2
 
@@ -355,7 +355,7 @@ exit
 
 ```bash
 # Check disk space
-df -h /srv/pmm-data
+df -h ~/pmm-data
 
 # Check container stats
 docker stats pmm-server
